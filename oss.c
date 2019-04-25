@@ -322,7 +322,16 @@ int main(int argc, int **argv)
 	SweepProcBlocks(); //reset all proc blocks
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
-	Handler(1);
+
+
+	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
+	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
+	msgctl(toMasterQueue, IPC_RMID, NULL);
+
+	printf("%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
+
+	kill(getpid(), SIGTERM); //kill self
+	
 	//DoSharedWork();			 //fattest function west of the mississippi
 
 	return 0;
