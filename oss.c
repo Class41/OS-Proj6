@@ -109,7 +109,7 @@ void Handler(int signal)
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
 	msgctl(toMasterQueue, IPC_RMID, NULL);
 
-	printf("%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
+	printf("\n\n%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
 
 	kill(getpid(), SIGTERM); //kill self
 }
@@ -200,6 +200,31 @@ void SweepProcBlocks()
 	int i;
 	for (i = 0; i < MAX_PROCS; i++)
 		data->proc[i].pid = -1;
+}
+
+void ShiftReference()
+{
+	int i;
+
+	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	{
+		mem.mainMemory.frames[i].ref >> 1;
+	}
+}
+
+void SetReference(int pos)
+{
+	mem.mainMemory.frames[pos].ref ^= 0x256;
+}
+
+void SetDirty(int pos)
+{
+	mem.mainMemory.frames[pos].dirty = 0x1;
+}
+
+void ClearDirty(int pos)
+{
+	mem.mainMemory.frames[pos].dirty = 0x0;
 }
 
 /* The miracle of resource creation is done here */
@@ -344,12 +369,18 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
+	SetReference(0);
+	ShiftReference();
+	SetReference(0);
+	SetDirty(0);
+
+	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
 	msgctl(toMasterQueue, IPC_RMID, NULL);
 
-	printf("%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
+	printf("\n\n%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
 
 	kill(getpid(), SIGTERM); //kill self
 
