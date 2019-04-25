@@ -267,6 +267,13 @@ void GenerateResources()
 /* Display the system resource tables to the file */
 void DisplayResources()
 {
+	int i;
+	printf("*** Main Memory State ***");
+
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	{
+		printf("[0x2%x]\t%c%c%c%c%c%c%c%c\t%x\t%5i", i, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref, mem.mainMemory.frames[i].currentPid);
+	}
 }
 
 /* Find the proccess block with the given pid and return the position in the array */
@@ -379,13 +386,7 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
-	SetReference(0);
-	ShiftReference(0);
-
-	SetReference(1);
-	
-	printf("Is 0 less? %i", mem.mainMemory.frames[0].ref > mem.mainMemory.frames[1].ref);
-	//printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
+	DisplayResources();
 
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
