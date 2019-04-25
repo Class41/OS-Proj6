@@ -209,9 +209,11 @@ void GenerateResources()
 
 	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-		printf("\n%i", i);
+		mem.mainMemory.frames[i].ref = 0x0;
+		mem.mainMemory.frames[i].dirty = 0x0;
+		mem.mainMemory.frames[i].callback = nullptr;
+		mem.mainMemory.frames[i].currentPid = -1;
 	}
-	
 }
 
 /* Display the system resource tables to the file */

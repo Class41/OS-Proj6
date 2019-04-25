@@ -1,6 +1,8 @@
 #ifndef MEM_STR_H
 #define MEM_STR_H
 
+#include "shared.h"
+
 #define PAGE_SIZE 1
 #define PROC_SIZE 32
 #define MEM_SIZE 256
@@ -32,7 +34,7 @@ typedef struct
 typedef struct 
 {
    Main mainMemory;
-   ProcPageTable procTables;
+   ProcPageTable procTables[MAX_PROCS];
 } Memory;
 
 #endif
