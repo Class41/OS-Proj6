@@ -219,13 +219,15 @@ void ShiftReference()
 
 	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-		mem.mainMemory.frames[i].ref >> 1;
+		mem.mainMemory.frames[i].ref>>1;
 	}
 }
 
 void SetReference(int pos)
 {
-	mem.mainMemory.frames[pos].ref ^= 0x80;
+	unsigned bits : 8 = 0x80;
+
+	mem.mainMemory.frames[pos].ref ^= bits;
 }
 
 void SetDirty(int pos)
