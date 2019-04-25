@@ -23,18 +23,18 @@
 */
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c" //https://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0') 
+#define BYTE_TO_BINARY(byte)       \
+	(byte & 0x80 ? '1' : '0'),     \
+		(byte & 0x40 ? '1' : '0'), \
+		(byte & 0x20 ? '1' : '0'), \
+		(byte & 0x10 ? '1' : '0'), \
+		(byte & 0x08 ? '1' : '0'), \
+		(byte & 0x04 ? '1' : '0'), \
+		(byte & 0x02 ? '1' : '0'), \
+		(byte & 0x01 ? '1' : '0')
 
-int ipcid;			 //inter proccess shared memory
-Shared *data;		 //shared memory data
+int ipcid;	//inter proccess shared memory
+Shared *data; //shared memory data
 Memory mem;
 int toChildQueue;	//queue for communicating to child from master
 int toMasterQueue;   //queue for communicating from child to master
@@ -217,9 +217,9 @@ void ShiftReference()
 {
 	int i;
 
-	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-	mem.mainMemory.frames[i].ref = mem.mainMemory.frames[i].ref >> 1;
+		mem.mainMemory.frames[i].ref = mem.mainMemory.frames[i].ref >> 1;
 	}
 }
 
@@ -243,7 +243,7 @@ void GenerateResources()
 {
 	int i;
 
-	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
 		mem.mainMemory.frames[i].ref = 0x0;
 		mem.mainMemory.frames[i].dirty = 0x0;
@@ -252,9 +252,9 @@ void GenerateResources()
 	}
 
 	int j;
-	for(i = 0; i < MAX_PROCS; i++)
+	for (i = 0; i < MAX_PROCS; i++)
 	{
-		for(j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
+		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
 		{
 			mem.procTables[i].frames[j].swapped = 0;
 			mem.procTables[i].frames[j].framePos = -1;
@@ -267,7 +267,6 @@ void GenerateResources()
 /* Display the system resource tables to the file */
 void DisplayResources()
 {
-
 }
 
 /* Find the proccess block with the given pid and return the position in the array */
@@ -380,25 +379,14 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
-	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
-
 	SetReference(0);
+	ShiftReference(0);
 
-	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
+	SetReference(1);
+	
+	printf("Is 0 less? %i", mem.mainMemory.frames[0].ref > mem.mainMemory.frames[1].ref);
+	//printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
-	ShiftReference();
-	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
-
-	SetReference(0);
-	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
-
-	SetDirty(0);
-
-	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
-
-	ClearDirty(0);
-
-	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
