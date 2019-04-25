@@ -211,9 +211,21 @@ void GenerateResources()
 	{
 		mem.mainMemory.frames[i].ref = 0x0;
 		mem.mainMemory.frames[i].dirty = 0x0;
-		mem.mainMemory.frames[i].callback = nullptr;
+		mem.mainMemory.frames[i].callback = NULL;
 		mem.mainMemory.frames[i].currentPid = -1;
 	}
+
+	int j;
+	for(i = 0; i < MAX_PROCS; i++)
+	{
+		for(j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
+		{
+			mem.procTables[i].frames.swapped = 0;
+			mem.procTables[i].frames.framePos = -1;
+		}
+	}
+
+	printf("\n%s: Finished generating resources!", filen);
 }
 
 /* Display the system resource tables to the file */
