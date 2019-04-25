@@ -369,9 +369,18 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
+	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+
 	SetReference(0);
+
+		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+
 	ShiftReference();
+		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+
 	SetReference(0);
+		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+
 	SetDirty(0);
 
 	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
