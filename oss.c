@@ -269,7 +269,7 @@ void DisplayResources()
 {
 	int i;
 	printf("\n*** Main Memory State ***");
-	printf("\nAddr\tRef\t\t\tDirty\t\t\t\tPID");
+	printf("\nAddr\tRef\t\tDirty\t\tPID");
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
