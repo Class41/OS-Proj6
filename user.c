@@ -247,7 +247,7 @@ int main(int argc, int argv)
 
 				//int resCount = abs((rand() % ((data->resVec[resToRequest] - (data->alloc[resToRequest][FindPID(pid)]) + 1))));
 
-				sprintf(convert, "%i", resCount); //converstion magic
+				//sprintf(convert, "%i", resCount); //converstion magic
 
 				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, convert);
