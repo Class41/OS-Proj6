@@ -214,7 +214,7 @@ void ShiftReference()
 
 void SetReference(int pos)
 {
-	mem.mainMemory.frames[pos].ref ^ 0x80;
+	mem.mainMemory.frames[pos].ref ^= 0x80;
 }
 
 void SetDirty(int pos)
