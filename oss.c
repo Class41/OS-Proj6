@@ -13,6 +13,7 @@
 #include "queue.h"
 #include "shared.h"
 #include "string.h"
+#include "memorystructure.h"
 
 /*
 *	Author: Vasyl Onufriyev
