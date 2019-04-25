@@ -225,9 +225,7 @@ void ShiftReference()
 
 void SetReference(int pos)
 {
-	unsigned bits : 8 = 0x80;
-
-	mem.mainMemory.frames[pos].ref ^= bits;
+	mem.mainMemory.frames[pos].ref = 0x80;
 }
 
 void SetDirty(int pos)
