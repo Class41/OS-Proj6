@@ -7,17 +7,17 @@
 
 typedef struct
 {
+    unsigned int swapped;
+    unsigned int framePos;
+} TransFrame;
+
+typedef struct
+{
     unsigned ref : 8;
     unsigned dirty : 1;
     TransFrame* callback;
     int currentPid;
 } Frame;
-
-typedef struct
-{
-    unsigned int swapped;
-    unsigned int framePos;
-} TransFrame;
 
 typedef struct
 {

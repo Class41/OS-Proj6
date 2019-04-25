@@ -96,6 +96,8 @@ int CompareTime(Time *time1, Time *time2)
 /* handle ctrl-c and timer hit */
 void Handler(int signal)
 {
+	int i;
+
 	for (i = 0; i < childCount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
 		if (data->proc[i].pid != -1)
 			kill(data->proc[i].pid, SIGTERM);
@@ -280,7 +282,7 @@ int main(int argc, int **argv)
 	}
 
 	int optionItem;
-	while ((optionItem = getopt(argc, argv, "hvn:")) != -1) //read option list
+	while ((optionItem = getopt(argc, argv, "hn:")) != -1) //read option list
 	{
 		switch (optionItem)
 		{
@@ -291,10 +293,6 @@ int main(int argc, int **argv)
 		\t-n [count] : max proccesses at the same time. Default: 19\n\n",
 				   filen);
 			return;
-		case 'v': //verbosity settings
-			VERBOSE_LEVEL = 1;
-			printf("%s: Verbose mode enabled...\n", argv[0]);
-			break;
 		case 'n': //max # of children
 			childCount = atoi(optarg);
 			if (childCount > 19 || childCount < 0) //if 0  > n > 20
