@@ -322,6 +322,7 @@ int main(int argc, int **argv)
 	SweepProcBlocks(); //reset all proc blocks
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
+	Handler(1);
 	//DoSharedWork();			 //fattest function west of the mississippi
 
 	return 0;
