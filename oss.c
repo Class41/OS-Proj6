@@ -213,6 +213,22 @@ void SweepProcBlocks()
 		data->proc[i].pid = -1;
 }
 
+void InsertPage(TransFrame* tframe, int pid)
+{
+
+}
+
+void GenerateProc(int pos, int pid)
+{
+	data->proc[pos].pid = pid;
+
+	int i;
+	for(i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
+	{
+		procTables[pos].frames[i].framePos = InsertPage(&(procTables[pos].frames[i]), proc[pos].pid);
+	}
+}
+
 void ShiftReference()
 {
 	int i;
@@ -241,6 +257,11 @@ void ClearDirty(int pos)
 int GetPid(int pos)
 {
 	return mem.mainMemory.frames[pos].currentPid;
+}
+
+void SetPid(int pos, int pid)
+{
+	mem.mainMemory.frames[pos].currentPid = pid;
 }
 
 /* The miracle of resource creation is done here */
