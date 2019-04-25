@@ -180,20 +180,6 @@ void CalcNextActionTime(Time *t)
 	AddTimeLong(t, mstoadd);
 }
 
-int getResourceToRelease(int pid) //find a resource that is allocated and return its position to be released. -1 if no resources available...
-{
-	int myPos = FindPID(pid);
-	int i;
-
-	for (i = 0; i < 20; i++)
-	{
-		if (data->alloc[i][myPos] > 0)
-			return i;
-	}
-
-	return -1;
-}
-
 int main(int argc, int argv)
 {
 	ShmAttatch();   //attach to shared mem
@@ -222,7 +208,7 @@ int main(int argc, int argv)
 				exit(21);
 			}
 
-			resToReleasePos = getResourceToRelease(pid); //check if releaseable resource exists
+			//resToReleasePos = getResourceToRelease(pid); //check if releaseable resource exists
 			if ((rand() % 100) < CHANCE_TO_REQUEST)
 			{
 				strcpy(data->proc[FindPID(pid)].status, "EN REQ BLOK");
