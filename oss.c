@@ -214,7 +214,7 @@ void ShiftReference()
 
 void SetReference(int pos)
 {
-	mem.mainMemory.frames[pos].ref ^= 0x256;
+	mem.mainMemory.frames[pos].ref ^ 0x80;
 }
 
 void SetDirty(int pos)
@@ -382,6 +382,10 @@ int main(int argc, int **argv)
 		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
 
 	SetDirty(0);
+
+	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+
+	ClearDirty(0);
 
 	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
 
