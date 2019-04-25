@@ -220,8 +220,8 @@ void GenerateResources()
 	{
 		for(j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
 		{
-			mem.procTables[i].frames.swapped = 0;
-			mem.procTables[i].frames.framePos = -1;
+			mem.procTables[i].frames[j].swapped = 0;
+			mem.procTables[i].frames[j].framePos = -1;
 		}
 	}
 
