@@ -24,6 +24,7 @@
 
 int ipcid;			 //inter proccess shared memory
 Shared *data;		 //shared memory data
+Memory mem;
 int toChildQueue;	//queue for communicating to child from master
 int toMasterQueue;   //queue for communicating from child to master
 char *filen;		 //name of this executable
@@ -204,7 +205,13 @@ void SweepProcBlocks()
 /* The miracle of resource creation is done here */
 void GenerateResources()
 {
+	int i;
 
+	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	{
+		printf("\n%i", i);
+	}
+	
 }
 
 /* Display the system resource tables to the file */
@@ -331,7 +338,7 @@ int main(int argc, int **argv)
 	printf("%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
 
 	kill(getpid(), SIGTERM); //kill self
-	
+
 	//DoSharedWork();			 //fattest function west of the mississippi
 
 	return 0;
