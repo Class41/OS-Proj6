@@ -22,6 +22,17 @@
 *	Purpose: Launch user processes, allocate resourced or deny them depending on a shared memory table
 */
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c" //https://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
 int ipcid;			 //inter proccess shared memory
 Shared *data;		 //shared memory data
 Memory mem;
@@ -373,21 +384,21 @@ int main(int argc, int **argv)
 
 	SetReference(0);
 
-		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	ShiftReference();
-		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	SetReference(0);
-		printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	SetDirty(0);
 
-	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	ClearDirty(0);
 
-	printf("\nRef Val: %x Dirty Val: %x", mem.mainMemory.frames[0].ref, mem.mainMemory.frames[0].dirty);
+	printf("\nRef Val: %c%c%c%c%c%c%c%c Dirty Val: %x", BYTE_TO_BINARY(mem.mainMemory.frames[0].ref), mem.mainMemory.frames[0].dirty);
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
