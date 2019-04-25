@@ -245,7 +245,7 @@ int main(int argc, int argv)
 
 				//a bit of complicated calculation math here. The max number we should request is the system available - what we curently have allocated + 1 since a modulo 3 for example only produces 0 1 2, we and 1 2 3 instead.
 
-				int resCount = abs((rand() % ((data->resVec[resToRequest] - (data->alloc[resToRequest][FindPID(pid)]) + 1))));
+				//int resCount = abs((rand() % ((data->resVec[resToRequest] - (data->alloc[resToRequest][FindPID(pid)]) + 1))));
 
 				sprintf(convert, "%i", resCount); //converstion magic
 
