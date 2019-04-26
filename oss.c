@@ -236,7 +236,6 @@ int CheckAndInsert(int pid, int pageID)
 	}
 	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
 	{
-		printf("CALLED!");
 		InsertPage(pid, pageID);
 		return 2;
 	}
@@ -527,7 +526,7 @@ int main(int argc, int **argv)
 
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
-		CheckAndInsert(1, i);
+		printf ("\nCalled: %i", CheckAndInsert(1, i));
 	}
 
 		DisplayResources();
