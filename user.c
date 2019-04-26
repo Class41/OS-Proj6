@@ -266,7 +266,7 @@ int main(int argc, int argv)
 			{
 				strcpy(data->proc[FindPID(pid)].status, "START RELEASE");
 				msgbuf.mtype = pid;
-				strcpy(msgbuf.mtext, "REL"); //release the resource. Send request to release first
+				strcpy(msgbuf.mtext, "WRI"); //release the resource. Send request to release first
 				strcpy(data->proc[FindPID(pid)].status, "SND MASTER REL REQ");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 
