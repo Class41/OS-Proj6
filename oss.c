@@ -512,7 +512,7 @@ int main(int argc, int **argv)
 		}
 	}
 
-	for (i = 0; i < 300; i++)
+	for (i = 0; i < 1000; i++)
 	{
 		CheckAndInsert(rand() % 20, CalculatePageID(rand() % 32000));
 
