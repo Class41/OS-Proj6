@@ -128,6 +128,12 @@ void Handler(int signal)
 {
 	int i;
 
+	printf("\n\n\n** STATUSES **\n");
+	for (i = 0; i < childCount; i++)
+	{
+		printf("%i: %s\n", i, data->proc[i].status);
+	}
+
 	for (i = 0; i < childCount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
 		if (data->proc[i].pid != -1)
 			kill(data->proc[i].pid, SIGTERM);
@@ -771,8 +777,7 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
-
-	DoSharedWork();			 //fattest function west of the mississippi
+	DoSharedWork(); //fattest function west of the mississippi
 
 	return 0;
 }
