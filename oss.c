@@ -22,7 +22,7 @@
 *	Purpose: Launch user processes, allocate resourced or deny them depending on a shared memory table
 */
 
-#define SHIFT_INTERVAL 30
+#define SHIFT_INTERVAL 100
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c" //https://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
 #define BYTE_TO_BINARY(byte)       \
 	(byte & 0x80 ? '1' : '0'),     \
