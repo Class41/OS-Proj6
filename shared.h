@@ -17,6 +17,7 @@ typedef struct
     char status[50];
 	Time unblockTime;
 	int unblockOP;
+	int lastFrameRequested;
 } Process;
 
 typedef struct

@@ -249,12 +249,16 @@ int CalculatePageOffset(int rawLine)
 	return (rawLine % (PAGE_SIZE * 1000));
 }
 
-int CheckAndInsert(int pid, int pageID)
+int CheckAndInsert(int pid, int pageID, int insertMode)
 {
 	printf("\n\nBefore: FramePos: %i Swapped?: %i", mem.procTables[pid].frames[pageID].framePos, mem.procTables[pid].frames[pageID].swapped);
 	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
-		InsertPage(pid, pageID);
+		if (insertMode == 1)
+		{
+			InsertPage(pid, pageID);
+		}
+
 		printf("\nReturning 0");
 		return 0;
 	}
@@ -266,9 +270,12 @@ int CheckAndInsert(int pid, int pageID)
 	}
 	else if (mem.procTables[pid].frames[pageID].swapped == 1)
 	{
+		if (insertMode == 1)
+		{
+			InsertPage(pid, pageID);
+		}
 		printf("\nReturning 2");
 		fflush(stdout);
-		InsertPage(pid, pageID);
 		return 2;
 	}
 	else
@@ -567,7 +574,7 @@ void DoSharedWork()
 
 				fprintf(o, "%s: [%i:%i] [REQUEST] pid: %i proc: %i rawLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, rawLine);
 
-				switch (CheckAndInsert(procpos, CalculatePageID(rawLine)))
+				switch (CheckAndInsert(procpos, CalculatePageID(rawLine), 0))
 				{
 				case 0:
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
@@ -575,12 +582,13 @@ void DoSharedWork()
 
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 0;
+					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
-					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
+					AddTime(&(data->sysTime), 10);	 //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
@@ -589,8 +597,10 @@ void DoSharedWork()
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 10) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 0;
+					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);
+
 					enqueue(resQueue, reqpid);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
@@ -607,7 +617,7 @@ void DoSharedWork()
 				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send releasing resource identifier
 				writeRaw = atoi(msgbuf.mtext);
 
-				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw)))
+				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw), 0))
 				{
 				case 0:
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
@@ -700,10 +710,19 @@ void DoSharedWork()
 				case 0:
 					msgbuf.mtype = cpid;
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
+					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
+					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
+					msgbuf.mtype = cpid;
+					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
+					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
+					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
+					SetDirty(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					fprintf(o, "\t-> [%i:%i] [WRITE] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				default:
 					break;
