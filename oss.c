@@ -526,7 +526,8 @@ int main(int argc, int **argv)
 
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
-		printf ("\nCalled: %i", CheckAndInsert(1, i));
+		int result = CheckAndInsert(1, i);
+		printf ("\nCalled: %i", result);
 	}
 
 		DisplayResources();
