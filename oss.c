@@ -225,6 +225,7 @@ int CalculatePageOffset(int rawLine)
 
 int CheckAndInsert(int pid, int pageID)
 {
+	printf("\nValues: framepos: %i swapped: %i", mem.procTables[pid].frames[pageID].framePos,mem.procTables[pid].frames[pageID].swapped);
 	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
 		InsertPage(pid, pageID);
