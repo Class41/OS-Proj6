@@ -503,7 +503,7 @@ int main(int argc, int **argv)
 	int i, j;
 	for (i = 0; i < PROC_SIZE/PAGE_SIZE; i++)
 	{
-		InsertPage(0, i);
+		CheckAndInsert(0, i);
 
 		printf("\n\n**Proc Data**");
 		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
