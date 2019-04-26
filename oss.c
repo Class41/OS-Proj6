@@ -245,7 +245,7 @@ int CheckAndInsert(int pid, int pageID)
 void InsertPage(int pid, int pageID)
 {
 	int i;
-	unsigned oldest : 8;
+    unsigned oldest : 8;
 	int oldestPos = -1;
 
 	oldest = 0x80;
