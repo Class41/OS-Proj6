@@ -188,6 +188,7 @@ int main(int argc, int argv)
 	QueueAttatch(); //attach to queues
 
 	pid = getpid(); //shorthand for getpid every time from now
+	data->proc[FindPID(pid)].blocked = 0;
 
 	Time nextActionTime = {0, 0}; //time we should ask for next resources. 0 initially to get the ball rolling.
 
@@ -229,12 +230,13 @@ int main(int argc, int argv)
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
 				strcpy(data->proc[FindPID(pid)].status, "WAIT MASTER GRANT");
+				data->proc[FindPID(pid)].blocked = 1;
 
 				do
 				{
 					msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0); //wait and check for word from master
 
-					if (strcmp(msgbuf.mtext, "REQ_GRANT") == 0) //if got die signal or resource granted
+					if (strcmp(msgbuf.mtext, "REQ_GRANT") == 0 || data->proc[FindPID(pid)].blocked == 0) //if got die signal or resource granted
 						break;
 
 				} while (1);
