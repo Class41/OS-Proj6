@@ -676,7 +676,7 @@ void DoSharedWork()
 			if ((requestCounter++) == SHIFT_INTERVAL)
 			{
 				ShiftReference();
-				DisplayResources(); //print the every-20 table
+				//DisplayResources(); //print the every-20 table
 				printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
@@ -733,6 +733,7 @@ void DoSharedWork()
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
+					printf("\nCalled!");
 					msgbuf.mtype = cpid;
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
@@ -742,6 +743,7 @@ void DoSharedWork()
 					fprintf(o, "\t-> [%i:%i] [WRITE] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				default:
+					printf("\nCalled 1!");
 					break;
 				}
 			}
