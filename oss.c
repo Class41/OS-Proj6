@@ -134,7 +134,7 @@ void Handler(int signal)
 	printf("\n\n\n** STATUSES **\n");
 	for (i = 0; i < childCount; i++)
 	{
-		printf("%i: %s\n", i, data->proc[i].status);
+		printf("%i: %i : %s\n", i, data->proc[i].pid, data->proc[i].status);
 	}
 
 	for (i = 0; i < childCount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
