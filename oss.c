@@ -681,7 +681,7 @@ void DoSharedWork()
 			else if (strcmp(msgbuf.mtext, "TER") == 0) //if termination request
 			{
 				int procpos = FindPID(msgbuf.mtype); //find cild in proc table
-				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
+				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
 
 				fprintf(o, "\t-> [%i:%i] [TERMINATE] [PAUGE_FAULT=SWAPPED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 			}
