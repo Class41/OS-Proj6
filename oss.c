@@ -215,12 +215,13 @@ void SweepProcBlocks()
 
 int CalculatePageID(int rawLine)
 {
-	return (rawLine / PAGE_SIZE * 1000);
+	printf("Got: %i calculating: %i\n", rawLine, rawLine / (PAGE_SIZE * 1000));
+	return (rawLine / (PAGE_SIZE * 1000));
 }
 
 int CalculatePageOffset(int rawLine)
 {
-	return (rawLine % PAGE_SIZE * 1000);
+	return (rawLine % (PAGE_SIZE * 1000));
 }
 
 int CheckAndInsert(int pid, int pageID)
