@@ -688,7 +688,6 @@ void DoSharedWork()
 			{
 				ShiftReference();
 				DisplayResources(); //print the every-20 table
-				printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
 		}
