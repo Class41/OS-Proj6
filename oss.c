@@ -683,30 +683,35 @@ void DoSharedWork()
 		}
 
 		/* Check the queues if anything can be reenstated now with requested resources... */
-		/*for (iterator = 0; iterator < getSize(resQueue); iterator++)
+		for (iterator = 0; iterator < getSize(resQueue); iterator++)
 		{
-			int cpid = dequeue(resQueue);				//get realpid from the queue
-			int procpos = FindPID(cpid);				//try to find the process in the table
-			int resID = FindAllocationRequest(procpos); //get the requested resource
+			int cpid = dequeue(resQueue); //get realpid from the queue
+			int procpos = FindPID(cpid);  //try to find the process in the table
 
 			if (procpos < 0) //if our proccess is no longer in the table, then just skip it and remove it from the queue
 			{
 				continue;
 			}
-			else if (AllocResource(procpos, resID) == 1) //the process was in the queue and alive and resources were granted
+			else if (&(CompareTime(data->sysTime), &(data->procs[procpos].unblockTime)))
 			{
-
-				fprintf(o, "%s: [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
-				pidallocs++;
-				strcpy(msgbuf.mtext, "REQ_GRANT"); //send child signal that it got the resources
-				msgbuf.mtype = cpid;
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //send parent termination signal
+				switch (data->procs[procpos].unblockOP)
+				{
+				case 0:
+					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				case 1:
+					break;
+				default:
+					break;
+				}
 			}
 			else
 			{
-				enqueue(resQueue, cpid); //the proc exists, but the resources werent granted. Back the looping queue hell
+				enqueue(resQueue, cpid);
 			}
-		}*/
+		}
 
 		fflush(stdout);
 	}

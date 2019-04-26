@@ -22,8 +22,8 @@
 */
 
 /* Constants for termination and using all time--the reason termination is not const is because it changes depending if it is a realtime proccess or not */
-int CHANCE_TO_DIE_PERCENT = 1;	//chance to die
-const int CHANCE_TO_REQUEST = 55; //chance to make a request
+int CHANCE_TO_DIE_PERCENT = 0;	//chance to die
+const int CHANCE_TO_REQUEST = 100; //chance to make a request
 
 /* Housekeeping holders for shared memory and file name alias */
 Shared *data;
