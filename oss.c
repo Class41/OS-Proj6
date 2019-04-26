@@ -236,7 +236,7 @@ void InsertPage(int pid, int pageID)
 	{
 		if(mem.mainMemory.frames[i].ref < oldest)
 		{
-			oldest = ref;
+			oldest = mem.mainMemory.frames[i].ref;
 			oldestPos = i;
 		}
 	}
@@ -256,7 +256,7 @@ void GenerateProc(int pos)
 	for(i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		mem.procTables[pos].frames[i].framePos = -1;
-		mem.procTables[pos].frames.swapped = 1;
+		mem.procTables[pos].frames[i].swapped = 1;
 	}
 }
 
