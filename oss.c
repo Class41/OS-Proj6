@@ -291,12 +291,11 @@ void InsertPage(int pid, int pageID)
 	int i;
 	Frame oldest;
 	oldest.ref = 0xff;
-
 	int oldestPos = -1;
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-		if (mem.mainMemory.frames[i].currentPid < 0)
+		if (mem.mainMemory.frames[i].currentPid == -1)
 		{
 			oldestPos = i;
 			break;
@@ -581,6 +580,7 @@ void DoSharedWork()
 					break;
 				case 1:
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
+					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
