@@ -20,7 +20,7 @@
 *	Author: Vasyl Onufriyev
 *	Project 5: Resource managment
 *	Date: 4/16/19
-*	Purpose: User process that is managed by oss, will either terminate, use all time, or begin an IO operation which blocks and returns a certain amount of time
+*	Purpose: User process that is managed by oss, will either terminate, use all time, or begin an IO operation which blocks and returns a certain amount of time 
 */
 
 /* Constants for termination and using all time--the reason termination is not const is because it changes depending if it is a realtime proccess or not */
