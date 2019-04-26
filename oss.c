@@ -488,6 +488,7 @@ void DoSharedWork()
 	int exitCount = 0;
 	int status;
 	int iterator;
+	int requestCounter = 0;
 
 	/* Proc toChildQueue and message toChildQueue data */
 	int msgsize;
@@ -567,7 +568,7 @@ void DoSharedWork()
 
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 0;
-					enqueue(resQueue, reqpid);																   //enqueue into wait queue since failed
+					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
@@ -596,7 +597,7 @@ void DoSharedWork()
 				int writeRaw;
 
 				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send releasing resource identifier
-				writeRaw = atoi(msgbuf.mtext)
+				writeRaw = atoi(msgbuf.mtext);
 
 				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw)))
 				{
@@ -606,7 +607,7 @@ void DoSharedWork()
 
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;
-					enqueue(resQueue, reqpid);																   //enqueue into wait queue since failed
+					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
@@ -671,61 +672,10 @@ void DoSharedWork()
 			deadlockExec.ns = data->sysTime.ns;
 
 			AddTimeLong(&deadlockExec, abs((long)(rand() % 1000) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
-
-			int *procFlags; //create empty flags pointer
-			int i;
-
-			int deadlockDisplayed = 0; //did we display a deadlock for this instance yet? 1 time switch basically
-			int terminated;
-			do
-			{
-				terminated = 0;								 //as long as we terminate a proccess...
-				procFlags = calloc(childCount, sizeof(int)); //create a new proc flag vector
-
-				DeadLockDetector(procFlags); //run detection algorithm which returns a array of 0's and 1's based on process positions in the table
-
-				for (i = 0; i < childCount; i++) //for each ith resource
-				{
-
-					if (procFlags[i] == 0 && data->proc[i].pid > 0) //if the pid is > 0 meaning the process exists, and the flag was set to 0 meaning it is not going to free up on its own...
-					{
-
-						if (deadlockDisplayed == 0) //we have detected that at least a single deadlock exists.
-						{
-							deadlockCount++; //inc deadlock count, display deadlock state, begin playing sudoku
-							deadlockDisplayed = 1;
-							if (lineCount++ < MAX_LINES)
-							{
-								fprintf(o, "********** DEADLOCK DETECTED **********");
-								DisplayResources();
-								int j;
-								fprintf(o, "Deadlocked Procs are as follows:\n [ ");
-								for (j = 0; j < childCount; j++)
-									if (procFlags[j] == 0)
-										fprintf(o, "%i ", j);
-								fprintf(o, "]\n");
-							}
-						}
-
-						terminated = 1;					  //we are terminating a process this run
-						msgbuf.mtype = data->proc[i].pid; //send link to gannon's lair with light
-						strcpy(msgbuf.mtext, "DIE");
-						msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //send signal
-						DeleteProc(i, resQueue);								   //remove the process from the table
-						pidprocterms++;
-						deadlockProcs++;
-						if (lineCount++ < MAX_LINES)
-							fprintf(o, "%s: [%i:%i] [KILL SENT] [DEADLOCK BUSTER PRO V1337.420.360noscope edition] pid: %i proc: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[i].pid, i);
-						break;
-					}
-				}
-				free(procFlags);	   //remove the current flag array and create a new one next time
-			} while (terminated == 1); //while we are still removing items
-									   //The flow is: remove item, check if deadlock still exists, remove the next item, starting the lowest index.
 		}
 
 		/* Check the queues if anything can be reenstated now with requested resources... */
-		for (iterator = 0; iterator < getSize(resQueue); iterator++)
+		/*for (iterator = 0; iterator < getSize(resQueue); iterator++)
 		{
 			int cpid = dequeue(resQueue);				//get realpid from the queue
 			int procpos = FindPID(cpid);				//try to find the process in the table
@@ -748,7 +698,7 @@ void DoSharedWork()
 			{
 				enqueue(resQueue, cpid); //the proc exists, but the resources werent granted. Back the looping queue hell
 			}
-		}
+		}*/
 
 		fflush(stdout);
 	}
