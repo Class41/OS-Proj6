@@ -228,14 +228,18 @@ int CheckAndInsert(int pid, int pageID)
 	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
 		InsertPage(pid, pageID);
+		printf("\nReturning 0");
 		return 0;
 	}
 	if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
 	{
+				printf("\nReturning 1");
 		return 1;
 	}
 	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
 	{
+				printf("\nReturning 2");
+
 		InsertPage(pid, pageID);
 		return 2;
 	}
@@ -508,12 +512,6 @@ int main(int argc, int **argv)
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		CheckAndInsert(1, i);
-
-		printf("\n\n**Proc Data**");
-		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
-		{
-			printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
-		}
 	}
 
 	for (i = 0; i < 1000; i++)
@@ -526,8 +524,7 @@ int main(int argc, int **argv)
 
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
-		int result = CheckAndInsert(1, i);
-		printf ("\nCalled: %i", result);
+		CheckAndInsert(1, i);
 	}
 
 		DisplayResources();
