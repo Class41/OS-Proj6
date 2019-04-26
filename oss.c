@@ -644,7 +644,6 @@ void DoSharedWork()
 				case 0:
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
-
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
@@ -652,6 +651,7 @@ void DoSharedWork()
 					break;
 				case 1:
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
+					AddTime(&(data->sysTime), 5000); //increment clock between tasks to advance the clock a little
 					SetDirty(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					msgbuf.mtype = reqpid;
@@ -662,7 +662,7 @@ void DoSharedWork()
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 10) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;
 					enqueue(resQueue, reqpid);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
@@ -730,7 +730,6 @@ void DoSharedWork()
 
 			if (procpos < 0) //if our proccess is no longer in the table, then just skip it and remove it from the queue
 			{
-				printf("\nI should not be getting called...");
 				continue;
 			}
 			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)) == 1)
@@ -746,7 +745,6 @@ void DoSharedWork()
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
-					printf("\nI should not be getting called...");
 					msgbuf.mtype = cpid;
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);

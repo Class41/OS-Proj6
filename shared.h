@@ -18,7 +18,6 @@ typedef struct
 	Time unblockTime;
 	int unblockOP;
 	int lastFrameRequested;
-	int blocked;
 } Process;
 
 typedef struct

@@ -15,7 +15,6 @@
 #include "string.h"
 #include "memorystructure.h"
 
-
 /*
 *	Author: Vasyl Onufriyev
 *	Project 5: Resource managment
@@ -24,8 +23,8 @@
 */
 
 /* Constants for termination and using all time--the reason termination is not const is because it changes depending if it is a realtime proccess or not */
-int CHANCE_TO_DIE_PERCENT = 0;	 //chance to die
-const int CHANCE_TO_REQUEST = 100; //chance to make a request
+int CHANCE_TO_DIE_PERCENT = 0;	//chance to die
+const int CHANCE_TO_REQUEST = 50; //chance to make a request
 
 /* Housekeeping holders for shared memory and file name alias */
 Shared *data;
@@ -192,8 +191,7 @@ int main(int argc, int argv)
 
 	Time nextActionTime = {0, 0}; //time we should ask for next resources. 0 initially to get the ball rolling.
 
-	srand(pid);			 //ensure randomness by bitshifting and ORing the time based on the pid
-	int resToReleasePos; //will keep track of resource release position in the future
+	srand(pid); //ensure randomness by bitshifting and ORing the time based on the pid
 
 	while (1)
 	{
@@ -230,39 +228,45 @@ int main(int argc, int argv)
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 
 				strcpy(data->proc[FindPID(pid)].status, "WAIT MASTER GRANT");
-				data->proc[FindPID(pid)].blocked = 1;
-
 				do
 				{
 					msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0); //wait and check for word from master
 
-					if (strcmp(msgbuf.mtext, "REQ_GRANT") == 0 || data->proc[FindPID(pid)].blocked == 0) //if got die signal or resource granted
+					if (strcmp(msgbuf.mtext, "REQ_GRANT") == 0) //if got die signal or resource granted
 						break;
 
 				} while (1);
 				strcpy(data->proc[FindPID(pid)].status, "GOT REQ GRANT"); //otherwise, yay we got the resource!
 				CalcNextActionTime(&nextActionTime);
 			}
-			else if (resToReleasePos >= 0) //assuming we have a resource to deallocate
+			else
 			{
 				strcpy(data->proc[FindPID(pid)].status, "START RELEASE");
 				msgbuf.mtype = pid;
 				strcpy(msgbuf.mtext, "WRI"); //release the resource. Send request to release first
 				strcpy(data->proc[FindPID(pid)].status, "SND MASTER REL REQ");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				int resToUpdate = (rand() % ((PROC_SIZE / PAGE_SIZE) * 1000)); //generate random resource to request
 
-				char *convert[5]; //conver value to string
-				sprintf(convert, "%i", resToReleasePos);
+				char *convert[10]; //conver value to string
+				sprintf(convert, "%i", resToUpdate);
 
 				strcpy(msgbuf.mtext, convert); //send master id of resource to release
 				strcpy(data->proc[FindPID(pid)].status, "SND MASTER RELEASE ID");
 				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0);
 				strcpy(data->proc[FindPID(pid)].status, "MASTER ACCEPT RELEASE ID");
+
+				do
+				{
+					msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0); //wait and check for word from master
+
+					if (strcmp(msgbuf.mtext, "WRI_GRANT") == 0) //if got die signal or resource granted
+						break;
+
+				} while (1);
+				strcpy(data->proc[FindPID(pid)].status, "GOT WRITE"); //otherwise, yay we got the resource!
+
 				CalcNextActionTime(&nextActionTime);
-			}
-			else
-			{
-				CalcNextActionTime(&nextActionTime); //no resources to release were found but release was rolled.
 			}
 		}
 	}
