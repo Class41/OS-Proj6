@@ -187,7 +187,6 @@ int main(int argc, int argv)
 	QueueAttatch(); //attach to queues
 
 	pid = getpid(); //shorthand for getpid every time from now
-	data->proc[FindPID(pid)].blocked = 0;
 
 	Time nextActionTime = {0, 0}; //time we should ask for next resources. 0 initially to get the ball rolling.
 
