@@ -236,8 +236,8 @@ int CheckAndInsert(int pid, int pageID)
 	}
 	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
 	{
+		printf("CALLED!");
 		InsertPage(pid, pageID);
-		mem.procTables[pid].frames[pageID].swapped = 0;
 		return 2;
 	}
 }
@@ -270,7 +270,6 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1)
 	{
-		printf("\nSet swapped");
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
 	}
 
@@ -530,7 +529,7 @@ int main(int argc, int **argv)
 	{
 		CheckAndInsert(1, i);
 	}
-	
+
 		DisplayResources();
 
 	printf("\n\n**Proc Data**");
