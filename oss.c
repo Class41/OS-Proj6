@@ -321,6 +321,9 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1) //if the frame was already occupied
 	{
+		fprintf(o, "\t-> [%i:%i] [SWAPOUT IN PROGRESS] Swapping main memory frame %i currently allocated to %i (proc: %i) for PID %i (proc: %i )\n\n", 
+			data->sysTime.seconds, data->sysTime.ns, oldestPos, GetPid(oldestPos), FindPID(GetPid(oldestPos)), pid, FindPID(pid));
+			
 		if (mem.mainMemory.frames[oldestPos].dirty == 0x1) //check for dirty bit
 		{
 			AddTime(&(data->sysTime), 5000); //Make swapping it out more expensive
@@ -702,7 +705,7 @@ void DoSharedWork()
 			if ((requestCounter++) == SHIFT_INTERVAL)
 			{
 				ShiftReference();
-				DisplayResources(); 
+				DisplayResources();
 				requestCounter = 0;
 			}
 		}
