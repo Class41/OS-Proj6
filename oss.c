@@ -225,25 +225,39 @@ int CalculatePageOffset(int rawLine)
 
 int CheckAndInsert(int pid, int pageID)
 {
-	printf("\nValues: framepos: %i swapped: %i", mem.procTables[pid].frames[pageID].framePos,mem.procTables[pid].frames[pageID].swapped);
+	printf("\n\nBefore: FramePos: %i Swapped?: %i", mem.procTables[pid].frames[pageID].framePos, mem.procTables[pid].frames[pageID].swapped);
 	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
 		InsertPage(pid, pageID);
 		printf("\nReturning 0");
 		return 0;
 	}
-	if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
+	else if (mem.procTables[pid].frames[pageID].swapped == 0)
 	{
-				printf("\nReturning 1");
+		printf("\nReturning 1");
+		fflush(stdout);
 		return 1;
 	}
-	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
+	else if (mem.procTables[pid].frames[pageID].swapped == 1)
 	{
-				printf("\nReturning 2");
-
+		printf("\nReturning 2");
+		fflush(stdout);
 		InsertPage(pid, pageID);
 		return 2;
 	}
+	else
+	{
+		printf("\nReturning -1 - PID: %i PageID: %i", pid, pageID);
+		return -1;
+	}
+}
+
+void DeleteProc(int pid)
+{
+	int i;
+	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+		if(GetPid(i) == pid)
+			CleanupMemory(i);
 }
 
 void InsertPage(int pid, int pageID)
@@ -350,7 +364,7 @@ int GetPid(int pos)
 	return mem.mainMemory.frames[pos].currentPid;
 }
 
-void ClearPid(int pos, int pid)
+void ClearPid(int pos)
 {
 	mem.mainMemory.frames[pos].currentPid = -1;
 }
@@ -517,17 +531,25 @@ int main(int argc, int **argv)
 
 	for (i = 0; i < 1000; i++)
 	{
-		CheckAndInsert(rand() % 20, CalculatePageID(rand() % 32000));
+		CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
 
 		((rand() % 2) == 0) ? ShiftReference() : printf("");
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
+
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		CheckAndInsert(1, i);
 	}
+		DeleteProc(1);
+	for (i = 0; i < 1000; i++)
+{
+	CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
 
+	((rand() % 2) == 0) ? ShiftReference() : printf("");
+	SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
+}
 		DisplayResources();
 
 	printf("\n\n**Proc Data**");
