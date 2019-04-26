@@ -277,7 +277,7 @@ void SetCallback(int pos, TransFrame* frame)
 
 void SetReference(int pos)
 {
-	mem.mainMemory.frames[pos].ref ^= 0x80;
+	mem.mainMemory.frames[pos].ref = mem.mainMemory.frames[pos].ref | 0x80;
 }
 
 void ClearReference(int pos)
@@ -454,9 +454,14 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
+	int i;
+	for(i = 0; i < 300; i++)
+	{
 	CheckAndInsert(11, 22);
-	DisplayResources();
+	}
+	CheckAndInsert(12,13);
 
+	DisplayResources();
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
 	msgctl(toMasterQueue, IPC_RMID, NULL);
