@@ -373,7 +373,7 @@ void DisplayResources()
 {
 	int i;
 	printf("\n*** Main Memory State ***");
-	printf("\nAddr\tRef\t\tDirty\t\tPID");
+	printf("\nAddr\t\tRef\t\tDirty\tPID");
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
@@ -495,6 +495,7 @@ int main(int argc, int **argv)
 	for (i = 0; i < 300; i++)
 	{
 		CheckAndInsert(11, 22);
+		printf("\n%i", t.swapped);
 	}
 	CheckAndInsert(12, 13);
 
