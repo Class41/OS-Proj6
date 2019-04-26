@@ -245,10 +245,10 @@ int CheckAndInsert(int pid, int pageID)
 void InsertPage(int pid, int pageID)
 {
 	int i;
-    unsigned oldest : 8;
+    char oldest;
 	int oldestPos = -1;
 
-	oldest = 0x80;
+	oldest = 0xFF;
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
