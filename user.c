@@ -178,7 +178,7 @@ void CalcNextActionTime(Time *t)
 {
 	t->seconds = data->sysTime.seconds; //save current system time
 	t->ns = data->sysTime.ns;
-	long mstoadd = (rand() % 251) * 1000000; //add time to it as offset
+	long mstoadd = (rand() % 50) * 1000000; //add time to it as offset
 	AddTimeLong(t, mstoadd);
 }
 
