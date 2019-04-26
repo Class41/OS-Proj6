@@ -226,7 +226,7 @@ int CalculatePageOffset(int rawLine)
 
 int CheckAndInsert(int pid, int pageID)
 {
-	if(mem.procTables[pid].frames[pageID].framePos == -1)
+	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
 		InsertPage(pid, pageID);
 		return 0;
@@ -245,7 +245,7 @@ int CheckAndInsert(int pid, int pageID)
 void InsertPage(int pid, int pageID)
 {
 	int i;
-    char oldest;
+	char oldest;
 	int oldestPos = -1;
 
 	oldest = 0xFF;
@@ -503,7 +503,7 @@ int main(int argc, int **argv)
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
 	int i, j;
-	for (i = 0; i < PROC_SIZE/PAGE_SIZE; i++)
+	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		CheckAndInsert(1, i);
 
@@ -514,6 +514,19 @@ int main(int argc, int **argv)
 		}
 	}
 
+	for (i = 0; i < 300; i++)
+	{
+		CheckAndInsert(rand() % 20, CalculatePageID(rand() % 32000));
+
+		((rand() % 2) == 0) ? ShiftReference() : printf("");
+		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
+	}
+
+	printf("\n\n**Proc Data**");
+	for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
+	{
+		printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
+	}
 	DisplayResources();
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
