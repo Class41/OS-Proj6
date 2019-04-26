@@ -722,7 +722,7 @@ void DoSharedWork()
 			deadlockExec.seconds = data->sysTime.seconds; //capture current time
 			deadlockExec.ns = data->sysTime.ns;
 
-			if(getSize(reqQueue) == MAX_PROCS)
+			if(getSize(resQueue) == MAX_PROCS)
 			{
 				AddTime(&(data->sysTime), 250000); //LIGHT SPEED CAPTAIN
 			}
