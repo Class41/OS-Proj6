@@ -213,19 +213,50 @@ void SweepProcBlocks()
 		data->proc[i].pid = -1;
 }
 
-void InsertPage(TransFrame* tframe, int pid)
+int CheckAndInsert(int pid, int pageID)
 {
-
+	if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pos].frames.swapped == 0)
+	{
+		return 1;
+	}
+	else
+	{
+		InsertPage(pid, pageID);
+		return 0;
+	}
 }
 
-void GenerateProc(int pos, int pid)
+void InsertPage(int pid, int pageID)
 {
-	data->proc[pos].pid = pid;
+	int i;
+	int oldest = 99999999;
+	int oldestPos = -1;
 
+	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	{
+		if(mem.mainMemory.frames[i].ref < oldest)
+		{
+			oldest = ref;
+			oldestPos = i;
+		}
+	}
+
+	SetPid(oldestPos, pid);
+	SetReference(oldestPos);
+
+	mem.procTables[pid].frames[pageID].swapped = 0;
+	mem.procTables[pid].frames[pageID].framePos = oldestPos;
+
+	SetCallback(oldestPos, mem.procTables[pid].frames[pageID]);
+}
+
+void GenerateProc(int pos)
+{
 	int i;
 	for(i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
-		procTables[pos].frames[i].framePos = InsertPage(&(procTables[pos].frames[i]), proc[pos].pid);
+		mem.procTables[pos].frames[i].framePos = -1;
+		mem.procTables[pos].frames.swapped = 1;
 	}
 }
 
@@ -239,9 +270,19 @@ void ShiftReference()
 	}
 }
 
+void SetCallback(int pos, TransFrame* frame)
+{
+	mem.mainMemory.frames[pos].callback = frame;
+}
+
 void SetReference(int pos)
 {
 	mem.mainMemory.frames[pos].ref ^= 0x80;
+}
+
+void ClearReference(int pos)
+{
+	mem.mainMemory.frames[pos].ref = 0x0;
 }
 
 void SetDirty(int pos)
@@ -413,8 +454,8 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
+	CheckAndInsert(11, 22);
 	DisplayResources();
-
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
