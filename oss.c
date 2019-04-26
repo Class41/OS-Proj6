@@ -237,6 +237,7 @@ int CheckAndInsert(int pid, int pageID)
 	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
 	{
 		InsertPage(pid, pageID);
+		mem.procTables[pid].frames[pageID].swapped = 0;
 		return 2;
 	}
 }
