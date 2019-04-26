@@ -251,7 +251,7 @@ int CalculatePageOffset(int rawLine)
 
 int CheckAndInsert(int pid, int pageID, int insertMode)
 {
-	printf("\n\nBefore: FramePos: %i Swapped?: %i", mem.procTables[pid].frames[pageID].framePos, mem.procTables[pid].frames[pageID].swapped);
+	//printf("\n\nBefore: FramePos: %i Swapped?: %i", mem.procTables[pid].frames[pageID].framePos, mem.procTables[pid].frames[pageID].swapped);
 	if (mem.procTables[pid].frames[pageID].framePos == -1)
 	{
 		if (insertMode == 1)
@@ -259,13 +259,13 @@ int CheckAndInsert(int pid, int pageID, int insertMode)
 			InsertPage(pid, pageID);
 		}
 
-		printf("\nReturning 0");
+		//printf("\nReturning 0");
 		return 0;
 	}
 	else if (mem.procTables[pid].frames[pageID].swapped == 0)
 	{
-		printf("\nReturning 1");
-		fflush(stdout);
+		//printf("\nReturning 1");
+		//fflush(stdout);
 		return 1;
 	}
 	else if (mem.procTables[pid].frames[pageID].swapped == 1)
@@ -274,8 +274,8 @@ int CheckAndInsert(int pid, int pageID, int insertMode)
 		{
 			InsertPage(pid, pageID);
 		}
-		printf("\nReturning 2");
-		fflush(stdout);
+		//printf("\nReturning 2");
+		//fflush(stdout);
 		return 2;
 	}
 	else
