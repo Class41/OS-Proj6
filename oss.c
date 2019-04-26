@@ -231,8 +231,6 @@ int CheckAndInsert(int pid, int pageID)
 	}
 }
 
-TransFrame t;
-
 void InsertPage(int pid, int pageID)
 {
 	int i;
@@ -256,7 +254,7 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[i].currentPid > -1)
 	{
-		*(mem.mainMemory.frames[oldestPos].callback) = 1;
+		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
 	}
 
 	CleanupMemory(oldestPos);
@@ -266,7 +264,7 @@ void InsertPage(int pid, int pageID)
 	mem.procTables[pid].frames[pageID].swapped = 0;
 	mem.procTables[pid].frames[pageID].framePos = oldestPos;
 
-	SetCallback(oldestPos, mem.procTables[pid].frames[pageID].swapped);
+	SetCallback(oldestPos, &(mem.procTables[pid].frames[pageID]));
 }
 
 void GenerateProc(int pos)
@@ -302,9 +300,9 @@ void ClearCallback(int pos)
 	mem.mainMemory.frames[pos].callback = NULL;
 }
 
-void SetCallback(int pos, int* flag)
+void SetCallback(int pos, TransFrame *frame)
 {
-	mem.mainMemory.frames[pos].callback = flag;
+	mem.mainMemory.frames[pos].callback = frame;
 }
 
 void SetReference(int pos)
