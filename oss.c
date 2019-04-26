@@ -244,10 +244,8 @@ int CheckAndInsert(int pid, int pageID)
 void InsertPage(int pid, int pageID)
 {
 	int i;
-	char oldest;
+	int oldest = 99999999;
 	int oldestPos = -1;
-
-	oldest = 0xFF;
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
