@@ -510,7 +510,7 @@ int main(int argc, int **argv)
 		printf("\n\n**Proc Data**");
 		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
 		{
-			printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[i].frames[j].swapped, mem.procTables[i].frames[j].framePos);
+			printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
 		}
 	}
 
