@@ -592,7 +592,7 @@ void DoSharedWork()
 
 				switch (CheckAndInsert(procpos, CalculatePageID(rawLine), 0))
 				{
-				/*case 0:
+				case 0:
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
@@ -601,8 +601,8 @@ void DoSharedWork()
 					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
-					break;*/
-				default:
+					break;
+				case 1:
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
 					msgbuf.mtype = reqpid;
 					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
@@ -610,7 +610,7 @@ void DoSharedWork()
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
-			/*	case 2:
+				case 2:
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
@@ -622,7 +622,7 @@ void DoSharedWork()
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				default:
-					break;*/
+					break;
 				}
 			}
 			else if (strcmp(msgbuf.mtext, "WRI") == 0) //if release request
