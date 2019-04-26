@@ -607,7 +607,7 @@ void DoSharedWork()
 					msgbuf.mtype = reqpid;
 					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
-					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 2:
@@ -731,7 +731,7 @@ void DoSharedWork()
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
-					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), 0);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
