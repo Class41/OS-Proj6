@@ -502,9 +502,9 @@ int main(int argc, int **argv)
 	int i;
 	for (i = 0; i < 300; i++)
 	{
-		CheckAndInsert(rand() % 20, CalculatePageID(rand() % 32000));
+		CheckAndInsert(rand() % 20, CalculatePageID(rand() % (PROC_SIZE * 1000)));
 
-		((rand() % 2) == 0) ? ShiftReference() : printf(""); 
+		((rand() % 2) == 0) ? ShiftReference() : printf(" "); 
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
