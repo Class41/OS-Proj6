@@ -771,49 +771,8 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
-	int i, j;
-	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
-	{
-		CheckAndInsert(1, i);
-	}
 
-	for (i = 0; i < 1000; i++)
-	{
-		CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
-
-		((rand() % 2) == 0) ? ShiftReference() : printf("");
-		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
-	}
-
-	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
-	{
-		CheckAndInsert(1, i);
-	}
-	DeleteProc(1);
-	for (i = 0; i < 1000; i++)
-	{
-		CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
-
-		((rand() % 2) == 0) ? ShiftReference() : printf("");
-		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
-	}
-	DisplayResources();
-
-	printf("\n\n**Proc Data**");
-	for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
-	{
-		printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
-	}
-
-	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
-	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
-	msgctl(toMasterQueue, IPC_RMID, NULL);
-
-	printf("\n\n%s: Termination signal caught. Killed processes and killing self now...goodbye...\n\n", filen);
-
-	kill(getpid(), SIGTERM); //kill self
-
-	//DoSharedWork();			 //fattest function west of the mississippi
+	DoSharedWork();			 //fattest function west of the mississippi
 
 	return 0;
 }
