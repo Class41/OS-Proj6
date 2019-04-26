@@ -270,6 +270,8 @@ void InsertPage(int pid, int pageID)
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
 	}
 
+			printf("\nSet swapped test: %i", (mem.mainMemory.frames[oldestPos].callback)->swapped);
+
 	CleanupMemory(oldestPos);
 	SetPid(oldestPos, pid);
 	SetReference(oldestPos);
