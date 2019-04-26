@@ -680,8 +680,7 @@ void DoSharedWork()
 			{
 				int procpos = FindPID(msgbuf.mtype); //find cild in proc table
 
-				strcpy(msgbuf.mtext, "KILL_GRANT"); //send message that resource has been granted to child
-				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+				fprintf(o, "\t-> [%i:%i] [TERMINATE] [PAUGE_FAULT=SWAPPED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 			}
 
 			if ((requestCounter++) == SHIFT_INTERVAL)

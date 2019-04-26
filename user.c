@@ -23,8 +23,8 @@
 */
 
 /* Constants for termination and using all time--the reason termination is not const is because it changes depending if it is a realtime proccess or not */
-int CHANCE_TO_DIE_PERCENT = 0;	//chance to die
-const int CHANCE_TO_REQUEST = 50; //chance to make a request
+int CHANCE_TO_DIE_PERCENT = 20;   //chance to die
+const int CHANCE_TO_REQUEST = 85; //chance to make a request
 
 /* Housekeeping holders for shared memory and file name alias */
 Shared *data;
@@ -189,6 +189,7 @@ int main(int argc, int argv)
 	pid = getpid(); //shorthand for getpid every time from now
 
 	Time nextActionTime = {0, 0}; //time we should ask for next resources. 0 initially to get the ball rolling.
+	int memrefCount = 0;
 
 	srand(pid); //ensure randomness by bitshifting and ORing the time based on the pid
 
@@ -198,15 +199,6 @@ int main(int argc, int argv)
 		if (CompareTime(&(data->sysTime), &(nextActionTime)) == 1) //if it is time to rumble
 		{
 			strcpy(data->proc[FindPID(pid)].status, "EN TIME START");
-			if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT) //roll for termination
-			{
-				msgbuf.mtype = pid;
-				strcpy(msgbuf.mtext, "TER");
-				strcpy(data->proc[FindPID(pid)].status, "SND MSTR TERM");
-				msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0); //send parent termination signal
-				strcpy(data->proc[FindPID(pid)].status, "EXT MSTR GOT");
-				exit(21);
-			}
 			//resToReleasePos = getResourceToRelease(pid); //check if releaseable resource exists
 			if ((rand() % 100) < CHANCE_TO_REQUEST)
 			{
@@ -266,6 +258,19 @@ int main(int argc, int argv)
 				strcpy(data->proc[FindPID(pid)].status, "GOT WRITE"); //otherwise, yay we got the resource!
 
 				CalcNextActionTime(&nextActionTime);
+			}
+
+			if ((memrefCount++ % 1000) == 0)
+			{
+				if ((rand() % 100) <= CHANCE_TO_DIE_PERCENT) //roll for termination
+				{
+					msgbuf.mtype = pid;
+					strcpy(msgbuf.mtext, "TER");
+					strcpy(data->proc[FindPID(pid)].status, "SND MSTR TERM");
+					msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0); //send parent termination signal
+					strcpy(data->proc[FindPID(pid)].status, "EXT MSTR GOT");
+					exit(21);
+				}
 			}
 		}
 	}
