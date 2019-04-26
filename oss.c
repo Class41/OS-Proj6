@@ -682,7 +682,7 @@ void DoSharedWork()
 			if ((requestCounter++) == SHIFT_INTERVAL)
 			{
 				ShiftReference();
-				//DisplayResources(); //print the every-20 table
+				DisplayResources(); //print the every-20 table
 				printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
