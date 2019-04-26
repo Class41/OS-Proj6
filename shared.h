@@ -3,11 +3,6 @@
 
 #define MAX_PROCS 19
 
-typedef struct
-{
-	int pid; //process pid
-    char status[50];
-} Process;
 
 /* Time structure */
 typedef struct
@@ -15,6 +10,14 @@ typedef struct
 	unsigned int seconds;
 	unsigned int ns;
 } Time;
+
+typedef struct
+{
+	int pid; //process pid
+    char status[50];
+	Time unblockTime;
+	int unblockOP;
+} Process;
 
 typedef struct
 {

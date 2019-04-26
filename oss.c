@@ -22,6 +22,7 @@
 *	Purpose: Launch user processes, allocate resourced or deny them depending on a shared memory table
 */
 
+#define SHIFT_INTERVAL 30
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c" //https://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
 #define BYTE_TO_BINARY(byte)       \
 	(byte & 0x80 ? '1' : '0'),     \
@@ -61,6 +62,23 @@ int FindPID(int pid);
 void QueueAttatch();
 void GenerateResources();
 void DisplayResources();
+int CalculatePageID(int rawLine);
+int CalculatePageOffset(int rawLine);
+int CheckAndInsert(int pid, int pageID);
+void DeleteProc(int pid);
+void InsertPage(int pid, int pageID);
+void GenerateProc(int pos);
+void CleanupMemory(int pos);
+void ShiftReference();
+void ClearCallback(int pos);
+void SetCallback(int pos, TransFrame *frame);
+void SetReference(int pos);
+void ClearReference(int pos);
+void SetDirty(int pos);
+void ClearDirty(int pos);
+int GetPid(int pos);
+void ClearPid(int pos);
+void SetPid(int pos, int pid);
 
 /* Message queue standard message buffer */
 struct
@@ -255,8 +273,8 @@ int CheckAndInsert(int pid, int pageID)
 void DeleteProc(int pid)
 {
 	int i;
-	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
-		if(GetPid(i) == pid)
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+		if (GetPid(i) == pid)
 			CleanupMemory(i);
 }
 
@@ -463,6 +481,286 @@ void QueueAttatch()
 	}
 }
 
+void DoSharedWork()
+{
+	/* General sched data */
+	int activeProcs = 0;
+	int exitCount = 0;
+	int status;
+	int iterator;
+
+	/* Proc toChildQueue and message toChildQueue data */
+	int msgsize;
+
+	/* Set shared memory clock value */
+	data->sysTime.seconds = 0;
+	data->sysTime.ns = 0;
+
+	/* Setup time for random child spawning and deadlock running */
+	Time nextExec = {0, 0};
+	Time deadlockExec = {0, 0};
+	/* Create queues */
+	struct Queue *resQueue = createQueue(childCount); //Queue of real PIDS
+
+	while (1)
+	{
+		AddTime(&(data->sysTime), CLOCK_ADD_INC); //increment clock between tasks to advance the clock a little
+		//printf("Wh");
+		pid_t pid; //pid temp
+
+		/* Only executes when there is a proccess ready to be launched, given the time is right for exec, there is room in the proc table */
+		if (activeProcs < childCount && CompareTime(&(data->sysTime), &nextExec))
+		{
+			pid = fork(); //the mircle of proccess creation
+
+			if (pid < 0) //...or maybe not proccess creation if this executes
+			{
+				perror("Failed to fork, exiting");
+				Handler(1);
+			}
+
+			if (pid == 0)
+			{
+				DoFork(pid); //do the fork thing with exec followup
+			}
+
+			/* Setup the next exec for proccess*/
+			nextExec.seconds = data->sysTime.seconds; //capture current time
+			nextExec.ns = data->sysTime.ns;
+
+			AddTimeLong(&nextExec, abs((long)(rand() % 501) * (long)1000000)); //set new exec time to 0 - 500ms after now
+
+			/* Setup the child proccess and its proccess block if there is a available slot in the control block */
+			int pos = FindEmptyProcBlock();
+			if (pos > -1)
+			{
+				/* Initialize the proccess table */
+				data->proc[pos].pid = pid; //we stored the pid from fork call and now assign it to PID
+				GenerateProc(pos);
+				fprintf(o, "%s: [%i:%i] [PROC CREATE] pid: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, pid);
+				activeProcs++; //increment active execs
+			}
+			else
+			{
+				kill(pid, SIGTERM); //if child failed to find a proccess block, just kill it off
+			}
+		}
+		//printf("did proc create");
+		if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1) //non-blocking wait while waiting for child to respond
+		{
+			if (strcmp(msgbuf.mtext, "REQ") == 0) //If message recieved was a request for resource
+			{
+				int reqpid = msgbuf.mtype;			 //save its mtype which is the pid of process
+				int procpos = FindPID(msgbuf.mtype); //find its position in proc table
+				int rawLine = 0;
+
+				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send resource identifier
+				rawLine = atoi(msgbuf.mtext);
+
+				fprintf(o, "%s: [%i:%i] [REQUEST] pid: %i proc: %i rawLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, rawLine);
+
+				switch (CheckAndInsert(procpos, CalculatePageID(rawLine)))
+				{
+				case 0:
+					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
+
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockOP = 0;
+					enqueue(resQueue, reqpid);																   //enqueue into wait queue since failed
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				case 1:
+					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
+					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				case 2:
+					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
+
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 10) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockOP = 0;
+					enqueue(resQueue, reqpid);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				default:
+					break;
+				}
+			}
+			else if (strcmp(msgbuf.mtext, "WRI") == 0) //if release request
+			{
+				int reqpid = msgbuf.mtype;			 //save pid of child
+				int procpos = FindPID(msgbuf.mtype); //lookup child in proc table
+				int writeRaw;
+
+				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send releasing resource identifier
+				writeRaw = atoi(msgbuf.mtext)
+
+				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw)))
+				{
+				case 0:
+					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
+
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockOP = 1;
+					enqueue(resQueue, reqpid);																   //enqueue into wait queue since failed
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				case 1:
+					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
+					SetDirty(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
+					SetReference(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
+					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					fprintf(o, "\t-> [%i:%i] [WRITE] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				case 2:
+					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
+
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 10) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockOP = 1;
+					enqueue(resQueue, reqpid);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAUGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					break;
+				default:
+					break;
+				}
+			}
+			else if (strcmp(msgbuf.mtext, "TER") == 0) //if termination request
+			{
+				int procpos = FindPID(msgbuf.mtype); //find cild in proc table
+
+				strcpy(msgbuf.mtext, "KILL_GRANT"); //send message that resource has been granted to child
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+			}
+
+			if ((requestCounter++) == SHIFT_INTERVAL)
+			{
+				ShiftReference();
+				DisplayResources(); //print the every-20 table
+				requestCounter = 0;
+			}
+		}
+
+		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned meaning the child died
+		{
+			if (WIFEXITED(status))
+			{
+				if (WEXITSTATUS(status) == 21) //21 is my custom return val
+				{
+					exitCount++;
+					activeProcs--;
+
+					int position = FindPID(pid);
+
+					if (position > -1) //if we could find the child in the proccess table, set it to unset
+					{
+						DeleteProc(position);
+						data->proc[position].pid = -1;
+					}
+				}
+			}
+		}
+
+		if (CompareTime(&(data->sysTime), &deadlockExec)) //if it is time to check for deadlocks
+		{
+			deadlockExec.seconds = data->sysTime.seconds; //capture current time
+			deadlockExec.ns = data->sysTime.ns;
+
+			AddTimeLong(&deadlockExec, abs((long)(rand() % 1000) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+
+			int *procFlags; //create empty flags pointer
+			int i;
+
+			int deadlockDisplayed = 0; //did we display a deadlock for this instance yet? 1 time switch basically
+			int terminated;
+			do
+			{
+				terminated = 0;								 //as long as we terminate a proccess...
+				procFlags = calloc(childCount, sizeof(int)); //create a new proc flag vector
+
+				DeadLockDetector(procFlags); //run detection algorithm which returns a array of 0's and 1's based on process positions in the table
+
+				for (i = 0; i < childCount; i++) //for each ith resource
+				{
+
+					if (procFlags[i] == 0 && data->proc[i].pid > 0) //if the pid is > 0 meaning the process exists, and the flag was set to 0 meaning it is not going to free up on its own...
+					{
+
+						if (deadlockDisplayed == 0) //we have detected that at least a single deadlock exists.
+						{
+							deadlockCount++; //inc deadlock count, display deadlock state, begin playing sudoku
+							deadlockDisplayed = 1;
+							if (lineCount++ < MAX_LINES)
+							{
+								fprintf(o, "********** DEADLOCK DETECTED **********");
+								DisplayResources();
+								int j;
+								fprintf(o, "Deadlocked Procs are as follows:\n [ ");
+								for (j = 0; j < childCount; j++)
+									if (procFlags[j] == 0)
+										fprintf(o, "%i ", j);
+								fprintf(o, "]\n");
+							}
+						}
+
+						terminated = 1;					  //we are terminating a process this run
+						msgbuf.mtype = data->proc[i].pid; //send link to gannon's lair with light
+						strcpy(msgbuf.mtext, "DIE");
+						msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //send signal
+						DeleteProc(i, resQueue);								   //remove the process from the table
+						pidprocterms++;
+						deadlockProcs++;
+						if (lineCount++ < MAX_LINES)
+							fprintf(o, "%s: [%i:%i] [KILL SENT] [DEADLOCK BUSTER PRO V1337.420.360noscope edition] pid: %i proc: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[i].pid, i);
+						break;
+					}
+				}
+				free(procFlags);	   //remove the current flag array and create a new one next time
+			} while (terminated == 1); //while we are still removing items
+									   //The flow is: remove item, check if deadlock still exists, remove the next item, starting the lowest index.
+		}
+
+		/* Check the queues if anything can be reenstated now with requested resources... */
+		for (iterator = 0; iterator < getSize(resQueue); iterator++)
+		{
+			int cpid = dequeue(resQueue);				//get realpid from the queue
+			int procpos = FindPID(cpid);				//try to find the process in the table
+			int resID = FindAllocationRequest(procpos); //get the requested resource
+
+			if (procpos < 0) //if our proccess is no longer in the table, then just skip it and remove it from the queue
+			{
+				continue;
+			}
+			else if (AllocResource(procpos, resID) == 1) //the process was in the queue and alive and resources were granted
+			{
+
+				fprintf(o, "%s: [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+				pidallocs++;
+				strcpy(msgbuf.mtext, "REQ_GRANT"); //send child signal that it got the resources
+				msgbuf.mtype = cpid;
+				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //send parent termination signal
+			}
+			else
+			{
+				enqueue(resQueue, cpid); //the proc exists, but the resources werent granted. Back the looping queue hell
+			}
+		}
+
+		fflush(stdout);
+	}
+
+	/* Wrap up the output file and detatch from shared memory items */
+	shmctl(ipcid, IPC_RMID, NULL);
+	msgctl(toChildQueue, IPC_RMID, NULL);
+	msgctl(toMasterQueue, IPC_RMID, NULL);
+	fflush(o);
+	fclose(o);
+}
+
 /* Program entry point */
 int main(int argc, int **argv)
 {
@@ -537,20 +835,19 @@ int main(int argc, int **argv)
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
-
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		CheckAndInsert(1, i);
 	}
-		DeleteProc(1);
+	DeleteProc(1);
 	for (i = 0; i < 1000; i++)
-{
-	CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
+	{
+		CheckAndInsert(rand() % 19, CalculatePageID(rand() % 32000));
 
-	((rand() % 2) == 0) ? ShiftReference() : printf("");
-	SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
-}
-		DisplayResources();
+		((rand() % 2) == 0) ? ShiftReference() : printf("");
+		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
+	}
+	DisplayResources();
 
 	printf("\n\n**Proc Data**");
 	for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
