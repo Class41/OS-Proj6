@@ -526,12 +526,11 @@ int main(int argc, int **argv)
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
-	DisplayResources();
-
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		CheckAndInsert(1, i);
 	}
+	
 		DisplayResources();
 
 	printf("\n\n**Proc Data**");
