@@ -244,7 +244,7 @@ int CheckAndInsert(int pid, int pageID)
 void InsertPage(int pid, int pageID)
 {
 	int i;
-	int oldest = 99999999;
+	Frame oldest.ref = 0xff;
 	int oldestPos = -1;
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
@@ -255,9 +255,9 @@ void InsertPage(int pid, int pageID)
 			break;
 		}
 
-		if (mem.mainMemory.frames[i].ref <= oldest)
+		if (mem.mainMemory.frames[i].ref <= oldest.ref)
 		{
-			oldest = mem.mainMemory.frames[i].ref;
+			oldest.ref = mem.mainMemory.frames[i].ref;
 			oldestPos = i;
 		}
 	}
