@@ -539,6 +539,8 @@ void DoSharedWork()
 		//printf("Wh");
 		pid_t pid; //pid temp
 		printf("\nBreak 1");
+						fflush(stdout);
+
 		/* Only executes when there is a proccess ready to be launched, given the time is right for exec, there is room in the proc table */
 		if (activeProcs < childCount && CompareTime(&(data->sysTime), &nextExec))
 		{
@@ -577,6 +579,8 @@ void DoSharedWork()
 			}
 		}
 				printf("\nBreak 2");
+								fflush(stdout);
+
 
 		//printf("did proc create");
 		if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1) //non-blocking wait while waiting for child to respond
@@ -686,6 +690,8 @@ void DoSharedWork()
 		}
 
 		printf("\nBreak 3");
+						fflush(stdout);
+
 
 		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned meaning the child died
 		{
@@ -708,6 +714,7 @@ void DoSharedWork()
 		}
 
 				printf("\nBreak 4");
+				fflush(stdout);
 
 
 		if (CompareTime(&(data->sysTime), &deadlockExec)) //if it is time to check for deadlocks
@@ -765,6 +772,7 @@ void DoSharedWork()
 		}
 
 				printf("\nBreak 6");
+				fflush(stdout);
 
 
 		fflush(stdout);
