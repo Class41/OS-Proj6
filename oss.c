@@ -215,7 +215,6 @@ void SweepProcBlocks()
 
 int CalculatePageID(int rawLine)
 {
-	printf("Got: %i calculating: %i\n", rawLine, rawLine / (PAGE_SIZE * 1000));
 	return (rawLine / (PAGE_SIZE * 1000));
 }
 
@@ -267,6 +266,7 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[i].currentPid > -1)
 	{
+		printf("\nSet swapped");
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
 	}
 
@@ -522,12 +522,13 @@ int main(int argc, int **argv)
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
+	DisplayResources();
+
 	printf("\n\n**Proc Data**");
 	for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
 	{
 		printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
 	}
-	DisplayResources();
 
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
