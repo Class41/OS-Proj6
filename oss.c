@@ -215,9 +215,14 @@ void SweepProcBlocks()
 
 int CheckAndInsert(int pid, int pageID)
 {
-	if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
+	if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
 	{
 		return 1;
+	}
+	else if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
+	{
+		InsertPage(pid, pageID);
+		return 2;
 	}
 	else
 	{
@@ -232,15 +237,27 @@ void InsertPage(int pid, int pageID)
 	int oldest = 99999999;
 	int oldestPos = -1;
 
-	for(i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-		if(mem.mainMemory.frames[i].ref < oldest)
+		if (mem.mainMemory.frames[i].currentPid < 0)
+		{
+			oldestPos = i;
+			break;
+		}
+
+		if (mem.mainMemory.frames[i].ref < oldest)
 		{
 			oldest = mem.mainMemory.frames[i].ref;
 			oldestPos = i;
 		}
 	}
 
+	if (mem.mainMemory.frames[i].currentPid > -1)
+	{
+		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
+	}
+
+	CleanupMemory(oldestPos);
 	SetPid(oldestPos, pid);
 	SetReference(oldestPos);
 
@@ -253,11 +270,19 @@ void InsertPage(int pid, int pageID)
 void GenerateProc(int pos)
 {
 	int i;
-	for(i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
+	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		mem.procTables[pos].frames[i].framePos = -1;
 		mem.procTables[pos].frames[i].swapped = 1;
 	}
+}
+
+void CleanupMemory(int pos)
+{
+	ClearReference(pos);
+	ClearDirty(pos);
+	ClearCallback(pos);
+	ClearPid(pos);
 }
 
 void ShiftReference()
@@ -270,7 +295,12 @@ void ShiftReference()
 	}
 }
 
-void SetCallback(int pos, TransFrame* frame)
+void ClearCallback(int pos)
+{
+	mem.mainMemory.frames[pos].callback = NULL;
+}
+
+void SetCallback(int pos, TransFrame *frame)
 {
 	mem.mainMemory.frames[pos].callback = frame;
 }
@@ -298,6 +328,11 @@ void ClearDirty(int pos)
 int GetPid(int pos)
 {
 	return mem.mainMemory.frames[pos].currentPid;
+}
+
+void ClearPid(int pos, int pid)
+{
+	mem.mainMemory.frames[pos].currentPid = -1;
 }
 
 void SetPid(int pos, int pid)
@@ -455,13 +490,14 @@ int main(int argc, int **argv)
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
 	int i;
-	for(i = 0; i < 300; i++)
+	for (i = 0; i < 300; i++)
 	{
-	CheckAndInsert(11, 22);
+		CheckAndInsert(11, 22);
 	}
-	CheckAndInsert(12,13);
+	CheckAndInsert(12, 13);
 
 	DisplayResources();
+
 	shmctl(ipcid, IPC_RMID, NULL);		  //free shared mem
 	msgctl(toChildQueue, IPC_RMID, NULL); //free queues
 	msgctl(toMasterQueue, IPC_RMID, NULL);
