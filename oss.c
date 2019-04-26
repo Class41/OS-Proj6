@@ -215,6 +215,7 @@ void SweepProcBlocks()
 
 int CalculatePageID(int rawLine)
 {
+	printf("Got: %i calculating: %i\n", rawLine, rawLine / PAGE_SIZE);
 	return (rawLine / PAGE_SIZE);
 }
 
