@@ -226,6 +226,11 @@ int CalculatePageOffset(int rawLine)
 
 int CheckAndInsert(int pid, int pageID)
 {
+	if(mem.procTables[pid].frames[pageID].framePos == -1)
+	{
+		InsertPage(pid, pageID);
+		return 0;
+	}
 	if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
 	{
 		return 1;
@@ -234,11 +239,6 @@ int CheckAndInsert(int pid, int pageID)
 	{
 		InsertPage(pid, pageID);
 		return 2;
-	}
-	else
-	{
-		InsertPage(pid, pageID);
-		return 0;
 	}
 }
 
