@@ -692,9 +692,9 @@ void DoSharedWork()
 			{
 				continue;
 			}
-			else if (&(CompareTime(data->sysTime), &(data->procs[procpos].unblockTime)))
+			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)))
 			{
-				switch (data->procs[procpos].unblockOP)
+				switch (data->proc[procpos].unblockOP)
 				{
 				case 0:
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
