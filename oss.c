@@ -719,7 +719,7 @@ void DoSharedWork()
 		}
 
 				printf("\nBreak 5");
-
+				fflush(stdout);
 
 		/* Check the queues if anything can be reenstated now with requested resources... */
 		for (iterator = 0; iterator < getSize(resQueue); iterator++)
