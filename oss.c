@@ -246,7 +246,7 @@ void InsertPage(int pid, int pageID)
 	int i;
 	Frame oldest;
 	oldest.ref = 0xff;
-	
+
 	int oldestPos = -1;
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
@@ -257,12 +257,15 @@ void InsertPage(int pid, int pageID)
 			break;
 		}
 
-		if (mem.mainMemory.frames[i].ref <= oldest.ref)
+		if (mem.mainMemory.frames[i].ref < oldest.ref)
 		{
 			oldest.ref = mem.mainMemory.frames[i].ref;
 			oldestPos = i;
 		}
 	}
+
+	if (oldestPos == -1)
+		oldestPos = 0;
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1)
 	{
