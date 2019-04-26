@@ -215,7 +215,7 @@ void SweepProcBlocks()
 
 int CalculatePageID(int rawLine)
 {
-	return floor(rawLine / PAGE_SIZE);
+	return (rawLine / PAGE_SIZE);
 }
 
 int CalculatePageOffset(int rawLine)
