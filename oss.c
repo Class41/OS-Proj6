@@ -64,7 +64,7 @@ void GenerateResources();
 void DisplayResources();
 int CalculatePageID(int rawLine);
 int CalculatePageOffset(int rawLine);
-int CheckAndInsert(int pid, int pageID);
+int CheckAndInsert(int pid, int pageID, int insertMode);
 void DeleteProc(int pid);
 void InsertPage(int pid, int pageID);
 void GenerateProc(int pos);
