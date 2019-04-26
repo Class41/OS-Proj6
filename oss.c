@@ -286,7 +286,7 @@ void GenerateProc(int pos)
 	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
 	{
 		mem.procTables[pos].frames[i].framePos = -1;
-		mem.procTables[pos].frames[i].swapped = 1;
+		mem.procTables[pos].frames[i].swapped = -1;
 	}
 }
 
