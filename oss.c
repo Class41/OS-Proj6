@@ -527,6 +527,18 @@ int main(int argc, int **argv)
 
 	DisplayResources();
 
+	for (i = 0; i < PROC_SIZE / PAGE_SIZE; i++)
+	{
+		CheckAndInsert(1, i);
+
+		printf("\n\n**Proc Data**");
+		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
+		{
+			printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[1].frames[j].swapped, mem.procTables[1].frames[j].framePos);
+		}
+	}
+		DisplayResources();
+
 	printf("\n\n**Proc Data**");
 	for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
 	{
