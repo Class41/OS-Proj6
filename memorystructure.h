@@ -17,7 +17,7 @@ typedef struct
 {
     unsigned ref : 8;
     unsigned dirty : 1;
-    TransFrame* callback;
+    int* callback;
     int currentPid;
 } Frame;
 
