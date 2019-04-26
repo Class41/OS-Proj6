@@ -44,7 +44,7 @@ int childCount = 19; //Max children concurrent
 
 FILE *o; //output log file pointer
 
-const int CLOCK_ADD_INC = 5000; //How much to increment the clock by per tick
+const int CLOCK_ADD_INC = 500000; //How much to increment the clock by per tick
 
 /* Create prototypes for used functions*/
 void Handler(int signal);
