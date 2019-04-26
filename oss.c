@@ -677,7 +677,7 @@ void DoSharedWork()
 			{
 				ShiftReference();
 				//DisplayResources(); //print the every-20 table
-				printf("\nProcs in queue: %i", getSize(resQueue));
+				//printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
 		}
@@ -715,10 +715,10 @@ void DoSharedWork()
 		{
 			int cpid = dequeue(resQueue); //get realpid from the queue
 			int procpos = FindPID(cpid);  //try to find the process in the table
+				printf("\nProcs in queue: %i", getSize(resQueue));
 
 			if (procpos < 0) //if our proccess is no longer in the table, then just skip it and remove it from the queue
 			{
-				printf("\nCalled!");
 				continue;
 			}
 			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)))
