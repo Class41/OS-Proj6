@@ -213,6 +213,16 @@ void SweepProcBlocks()
 		data->proc[i].pid = -1;
 }
 
+int CalculatePageID(int rawLine)
+{
+	return floor(rawLine / PAGE_SIZE);
+}
+
+int CalculatePageOffset(int rawLine)
+{
+	return (rawLine % PAGE_SIZE);
+}
+
 int CheckAndInsert(int pid, int pageID)
 {
 	if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
@@ -492,9 +502,9 @@ int main(int argc, int **argv)
 	int i;
 	for (i = 0; i < 300; i++)
 	{
-		CheckAndInsert(rand() % 20, rand() % 33);
+		CheckAndInsert(rand() % 20, CalculatePageID(rand() % 32000);
 
-		((rand() % 2) == 0) ? ShiftReference() : printf("Noshift!"); 
+		((rand() % 2) == 0) ? ShiftReference() : printf(""); 
 		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
