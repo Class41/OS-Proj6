@@ -492,9 +492,10 @@ int main(int argc, int **argv)
 	int i;
 	for (i = 0; i < 300; i++)
 	{
-		CheckAndInsert(11, 22);
+		CheckAndInsert(rand() % 20, rand() % 33);
+
+		((rand() % 2) == 0) ? ShiftReference() : printf("Noshift!"); 
 	}
-	CheckAndInsert(12, 13);
 
 	DisplayResources();
 
