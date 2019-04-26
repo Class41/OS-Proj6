@@ -79,6 +79,8 @@ void ClearDirty(int pos);
 int GetPid(int pos);
 void ClearPid(int pos);
 void SetPid(int pos, int pid);
+void DisplayResourcesToFile();
+
 
 /* Message queue standard message buffer */
 struct
@@ -442,6 +444,21 @@ void DisplayResources()
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
 		printf("\n[0x%-5x]\t%c%c%c%c%c%c%c%c\t%x\t%5i", i * 1000, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref), mem.mainMemory.frames[i].dirty, mem.mainMemory.frames[i].currentPid);
+	}
+	
+	DisplayResourcesToFile();
+}
+
+/* Display the system resource tables to the file */
+void DisplayResourcesToFile()
+{
+	int i;
+	fprintf(o, "\n*** Main Memory State ***");
+	fprintf(o, "\nAddr\t\tRef\t\tDirty\tPID");
+
+	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
+	{
+		fprintf(o, "\n[0x%-5x]\t%c%c%c%c%c%c%c%c\t%x\t%5i", i * 1000, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref), mem.mainMemory.frames[i].dirty, mem.mainMemory.frames[i].currentPid);
 	}
 }
 
