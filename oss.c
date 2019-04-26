@@ -500,13 +500,16 @@ int main(int argc, int **argv)
 	GenerateResources();
 	signal(SIGINT, Handler); //setup handler for CTRL-C
 
-	int i;
-	for (i = 0; i < 300; i++)
+	int i, j;
+	for (i = 0; i < PROC_SIZE/PAGE_SIZE; i++)
 	{
-		CheckAndInsert(rand() % 20, CalculatePageID(rand() % (PROC_SIZE * 1000)));
+		InsertPage(0, i);
 
-		((rand() % 2) == 0) ? ShiftReference() : printf(" "); 
-		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
+		printf("\n\n**Proc Data**");
+		for (j = 0; j < PROC_SIZE / PAGE_SIZE; j++)
+		{
+			printf("\n%i: Swapped? %i FramePos? %i", j, mem.procTables[i].frames[j].swapped, mem.procTables[i].frames[j].framePos);
+		}
 	}
 
 	DisplayResources();
