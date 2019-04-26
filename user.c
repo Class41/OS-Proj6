@@ -212,7 +212,7 @@ int main(int argc, int argv)
 			if ((rand() % 100) < CHANCE_TO_REQUEST)
 			{
 				strcpy(data->proc[FindPID(pid)].status, "EN REQ BLOK");
-				int resToRequest = (rand() % 20); //generate random resource to request
+				int resToRequest = (rand() % 32000); //generate random resource to request
 
 				//data->req[resToRequest][FindPID(pid)]
 
