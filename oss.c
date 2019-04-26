@@ -650,7 +650,7 @@ void DoSharedWork()
 			{
 				ShiftReference();
 				DisplayResources(); //print the every-20 table
-				printf("Procs in queue: %i", getSize(resQueue));
+				printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
 		}
@@ -698,6 +698,7 @@ void DoSharedWork()
 				switch (data->proc[procpos].unblockOP)
 				{
 				case 0:
+					msgbuf.mtype = cpid;
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
