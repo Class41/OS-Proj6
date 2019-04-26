@@ -538,8 +538,8 @@ void DoSharedWork()
 		AddTime(&(data->sysTime), CLOCK_ADD_INC); //increment clock between tasks to advance the clock a little
 		//printf("Wh");
 		pid_t pid; //pid temp
-		printf("\nBreak 1");
-						fflush(stdout);
+
+		fflush(stdout);
 
 		/* Only executes when there is a proccess ready to be launched, given the time is right for exec, there is room in the proc table */
 		if (activeProcs < childCount && CompareTime(&(data->sysTime), &nextExec))
@@ -578,9 +578,8 @@ void DoSharedWork()
 				kill(pid, SIGTERM); //if child failed to find a proccess block, just kill it off
 			}
 		}
-				printf("\nBreak 2");
-								fflush(stdout);
 
+		fflush(stdout);
 
 		//printf("did proc create");
 		if ((msgsize = msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), 0, IPC_NOWAIT)) > -1) //non-blocking wait while waiting for child to respond
@@ -689,9 +688,7 @@ void DoSharedWork()
 			}
 		}
 
-		printf("\nBreak 3");
-						fflush(stdout);
-
+		fflush(stdout);
 
 		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned meaning the child died
 		{
@@ -713,9 +710,7 @@ void DoSharedWork()
 			}
 		}
 
-				printf("\nBreak 4");
-				fflush(stdout);
-
+		fflush(stdout);
 
 		if (CompareTime(&(data->sysTime), &deadlockExec)) //if it is time to check for deadlocks
 		{
@@ -725,8 +720,7 @@ void DoSharedWork()
 			AddTimeLong(&deadlockExec, abs((long)(rand() % 1000) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 		}
 
-				printf("\nBreak 5");
-				fflush(stdout);
+		fflush(stdout);
 
 		/* Check the queues if anything can be reenstated now with requested resources... */
 		for (iterator = 0; iterator < getSize(resQueue); iterator++)
@@ -770,10 +764,6 @@ void DoSharedWork()
 				enqueue(resQueue, cpid);
 			}
 		}
-
-				printf("\nBreak 6");
-				fflush(stdout);
-
 
 		fflush(stdout);
 	}
