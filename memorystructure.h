@@ -7,31 +7,31 @@
 #define PROC_SIZE 32
 #define MEM_SIZE 256
 
-typedef struct
+typedef struct //Frame for the translation table
 {
     unsigned int swapped;
     unsigned int framePos;
 } TransFrame;
 
-typedef struct
+typedef struct //frame for the main memory
 {
     unsigned ref : 8;
     unsigned dirty : 1;
-    TransFrame *callback;
+    TransFrame *callback; //used to update the swapped value of currently resident frame
     int currentPid;
 } Frame;
 
-typedef struct
+typedef struct //poccess table frame
 {
     TransFrame frames[PROC_SIZE / PAGE_SIZE];
 } ProcPageTable;
 
-typedef struct
+typedef struct //main memory frame
 {
     Frame frames[MEM_SIZE / PAGE_SIZE];
 } Main;
 
-typedef struct
+typedef struct //total memory structure
 {
     Main mainMemory;
     ProcPageTable procTables[MAX_PROCS];

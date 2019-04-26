@@ -14,9 +14,9 @@ typedef struct
 {
 	int pid; //process pid
 	char status[50];
-	Time unblockTime;
-	int unblockOP;
-	int lastFrameRequested;
+	Time unblockTime; //Time proccess in queue should be unblocked at
+	int unblockOP; //Op to perform after dequeued
+	int lastFrameRequested; //frame parameter for unblock operation
 } Process;
 
 typedef struct
