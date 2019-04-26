@@ -495,6 +495,7 @@ int main(int argc, int **argv)
 		CheckAndInsert(rand() % 20, rand() % 33);
 
 		((rand() % 2) == 0) ? ShiftReference() : printf("Noshift!"); 
+		SetReference(rand() % (MEM_SIZE / PAGE_SIZE));
 	}
 
 	DisplayResources();
