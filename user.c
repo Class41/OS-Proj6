@@ -238,7 +238,6 @@ int main(int argc, int argv)
 						break;
 
 				} while (1);
-				printf("\n%i Got reply", pid);
 				strcpy(data->proc[FindPID(pid)].status, "GOT REQ GRANT"); //otherwise, yay we got the resource!
 				CalcNextActionTime(&nextActionTime);
 			}
