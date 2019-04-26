@@ -230,9 +230,15 @@ int main(int argc, int argv)
 
 				strcpy(data->proc[FindPID(pid)].status, "WAIT MASTER GRANT");
 
-				msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0); //wait and check for word from master
+				do
+				{
+					msgrcv(toChildQueue, &msgbuf, sizeof(msgbuf), pid, 0); //wait and check for word from master
 
-				printf("Got reply");
+					if (strcmp(msgbuf.mtext, "REQ_GRANT") == 0) //if got die signal or resource granted
+						break;
+
+				} while (1);
+				printf("\nGot reply");
 				strcpy(data->proc[FindPID(pid)].status, "GOT REQ GRANT"); //otherwise, yay we got the resource!
 				CalcNextActionTime(&nextActionTime);
 			}
