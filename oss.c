@@ -215,7 +215,7 @@ void SweepProcBlocks()
 
 int CheckAndInsert(int pid, int pageID)
 {
-	if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames.swapped == 0)
+	if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 0)
 	{
 		return 1;
 	}
