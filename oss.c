@@ -585,7 +585,9 @@ void DoSharedWork()
 				int procpos = FindPID(msgbuf.mtype); //find its position in proc table
 				int rawLine = 0;
 
+				printf("\nAwaiting frame pid");
 				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send resource identifier
+				printf("\nGot frame pid");
 				rawLine = atoi(msgbuf.mtext);
 
 				fprintf(o, "%s: [%i:%i] [REQUEST] pid: %i proc: %i rawLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, rawLine);
