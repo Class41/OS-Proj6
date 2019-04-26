@@ -3,7 +3,6 @@
 
 #define MAX_PROCS 19
 
-
 /* Time structure */
 typedef struct
 {
@@ -14,7 +13,7 @@ typedef struct
 typedef struct
 {
 	int pid; //process pid
-    char status[50];
+	char status[50];
 	Time unblockTime;
 	int unblockOP;
 	int lastFrameRequested;
@@ -23,7 +22,7 @@ typedef struct
 typedef struct
 {
 	Time sysTime;
-    Process proc[MAX_PROCS]; //process table
+	Process proc[MAX_PROCS]; //process table
 } Shared;
 
 #endif

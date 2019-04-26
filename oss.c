@@ -321,9 +321,9 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1)
 	{
-		if(mem.mainMemory.frames[oldestPos].dirty == 0x1)
+		if (mem.mainMemory.frames[oldestPos].dirty == 0x1)
 		{
-				AddTime(&(data->sysTime), 5000); //LIGHT SPEED CAPTAIN
+			AddTime(&(data->sysTime), 5000); //LIGHT SPEED CAPTAIN
 		}
 
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
@@ -649,8 +649,8 @@ void DoSharedWork()
 				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw), 0))
 				{
 				case 0:
-					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
-					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
+					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds;						   //capture current time
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;									   //capture current time
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
@@ -658,7 +658,7 @@ void DoSharedWork()
 					break;
 				case 1:
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
-					AddTime(&(data->sysTime), 5000); //increment clock between tasks to advance the clock a little
+					AddTime(&(data->sysTime), 5000);   //increment clock between tasks to advance the clock a little
 					SetDirty(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					msgbuf.mtype = reqpid;
@@ -680,8 +680,8 @@ void DoSharedWork()
 			}
 			else if (strcmp(msgbuf.mtext, "TER") == 0) //if termination request
 			{
-				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i proc: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
 				int procpos = FindPID(msgbuf.mtype); //find cild in proc table
+				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i proc: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
 
 				fprintf(o, "\t-> [%i:%i] [TERMINATE] [PAUGE_FAULT=SWAPPED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 			}
@@ -723,7 +723,7 @@ void DoSharedWork()
 			deadlockExec.seconds = data->sysTime.seconds; //capture current time
 			deadlockExec.ns = data->sysTime.ns;
 
-			if(getSize(resQueue) == MAX_PROCS)
+			if (getSize(resQueue) == MAX_PROCS)
 			{
 				AddTime(&(data->sysTime), 250000); //LIGHT SPEED CAPTAIN
 			}

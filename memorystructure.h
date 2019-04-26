@@ -17,7 +17,7 @@ typedef struct
 {
     unsigned ref : 8;
     unsigned dirty : 1;
-    TransFrame* callback;
+    TransFrame *callback;
     int currentPid;
 } Frame;
 
@@ -31,10 +31,10 @@ typedef struct
     Frame frames[MEM_SIZE / PAGE_SIZE];
 } Main;
 
-typedef struct 
+typedef struct
 {
-   Main mainMemory;
-   ProcPageTable procTables[MAX_PROCS];
+    Main mainMemory;
+    ProcPageTable procTables[MAX_PROCS];
 } Memory;
 
 #endif
