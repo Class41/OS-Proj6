@@ -749,7 +749,6 @@ void DoSharedWork()
 			}
 			else
 			{
-				printf("Requeued...");
 				enqueue(resQueue, cpid);
 			}
 		}
