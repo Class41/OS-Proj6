@@ -441,7 +441,7 @@ void DisplayResources()
 
 	for (i = 0; i < MEM_SIZE / PAGE_SIZE; i++)
 	{
-		printf("\n[0x%5x]\t%c%c%c%c%c%c%c%c\t%x\t%5i", i * 1000, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref), mem.mainMemory.frames[i].dirty, mem.mainMemory.frames[i].currentPid);
+		printf("\n[0x%-5x]\t%c%c%c%c%c%c%c%c\t%x\t%5i", i * 1000, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref), mem.mainMemory.frames[i].dirty, mem.mainMemory.frames[i].currentPid);
 	}
 }
 
