@@ -733,7 +733,6 @@ void DoSharedWork()
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
-					printf("\n[Queue] Sending %i data: %s", msgbuf.mtype, msgbuf.mtext);
 					break;
 				case 1:
 					printf("\nI should not be getting called...");
