@@ -128,6 +128,8 @@ void Handler(int signal)
 {
 	int i;
 
+	DisplayResources();
+
 	printf("\n\n\n** STATUSES **\n");
 	for (i = 0; i < childCount; i++)
 	{
