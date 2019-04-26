@@ -178,7 +178,7 @@ void CalcNextActionTime(Time *t)
 {
 	t->seconds = data->sysTime.seconds; //save current system time
 	t->ns = data->sysTime.ns;
-	long mstoadd = (rand() % 125) * 1000000; //request a new block every 0-25ms
+	long mstoadd = (rand() % 75) * 1000000; //request a new block every 0-75ms
 	AddTimeLong(t, mstoadd);
 }
 
