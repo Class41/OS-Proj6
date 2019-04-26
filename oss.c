@@ -219,7 +219,7 @@ int CheckAndInsert(int pid, int pageID)
 	{
 		return 1;
 	}
-	else if(mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
+	else if (mem.procTables[pid].frames[pageID].framePos > -1 && mem.procTables[pid].frames[pageID].swapped == 1)
 	{
 		InsertPage(pid, pageID);
 		return 2;
@@ -230,6 +230,8 @@ int CheckAndInsert(int pid, int pageID)
 		return 0;
 	}
 }
+
+TransFrame t;
 
 void InsertPage(int pid, int pageID)
 {
@@ -264,7 +266,7 @@ void InsertPage(int pid, int pageID)
 	mem.procTables[pid].frames[pageID].swapped = 0;
 	mem.procTables[pid].frames[pageID].framePos = oldestPos;
 
-	SetCallback(oldestPos, mem.procTables[pid].frames[pageID]);
+	SetCallback(oldestPos, /*mem.procTables[pid].frames[pageID]*/&t);
 }
 
 void GenerateProc(int pos)
