@@ -677,7 +677,7 @@ void DoSharedWork()
 			{
 				ShiftReference();
 				//DisplayResources(); //print the every-20 table
-				//printf("\nProcs in queue: %i", getSize(resQueue));
+				printf("\nProcs in queue: %i", getSize(resQueue));
 				requestCounter = 0;
 			}
 		}
@@ -715,10 +715,10 @@ void DoSharedWork()
 		{
 			int cpid = dequeue(resQueue); //get realpid from the queue
 			int procpos = FindPID(cpid);  //try to find the process in the table
-				printf("\nProcs in queue: %i", getSize(resQueue));
 
 			if (procpos < 0) //if our proccess is no longer in the table, then just skip it and remove it from the queue
 			{
+				printf("\nI should not be getting called...");
 				continue;
 			}
 			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)))
@@ -734,6 +734,7 @@ void DoSharedWork()
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 1:
+					printf("\nI should not be getting called...");
 					msgbuf.mtype = cpid;
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
@@ -748,6 +749,7 @@ void DoSharedWork()
 			}
 			else
 			{
+				printf("Requeued...");
 				enqueue(resQueue, cpid);
 			}
 		}
