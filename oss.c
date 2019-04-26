@@ -321,6 +321,11 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1)
 	{
+		if(mem.mainMemory.frames[oldestPos].dirty == 0x1)
+		{
+				AddTime(&(data->sysTime), 5000); //LIGHT SPEED CAPTAIN
+		}
+
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1;
 	}
 
@@ -716,6 +721,11 @@ void DoSharedWork()
 		{
 			deadlockExec.seconds = data->sysTime.seconds; //capture current time
 			deadlockExec.ns = data->sysTime.ns;
+
+			if(getSize(reqQueue) == MAX_PROCS)
+			{
+				AddTime(&(data->sysTime), 250000); //LIGHT SPEED CAPTAIN
+			}
 
 			AddTimeLong(&deadlockExec, abs((long)(rand() % 1000) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 		}
