@@ -608,6 +608,7 @@ void DoSharedWork()
 					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
+					printf("\n[Reciever] Sending %i data: %s", msgbuf.mtype, msgbuf.mtext);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 2:
@@ -722,7 +723,7 @@ void DoSharedWork()
 				printf("\nI should not be getting called...");
 				continue;
 			}
-			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)))
+			else if (CompareTime(&(data->sysTime), &(data->proc[procpos].unblockTime)) == 1)
 			{
 				switch (data->proc[procpos].unblockOP)
 				{
@@ -733,6 +734,7 @@ void DoSharedWork()
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					printf("\n[Queue] Sending %i data: %s", msgbuf.mtype, msgbuf.mtext);
 					break;
 				case 1:
 					printf("\nI should not be getting called...");
