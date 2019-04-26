@@ -608,7 +608,6 @@ void DoSharedWork()
 					AddTime(&(data->sysTime), 10); //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
 				case 2:
@@ -743,7 +742,6 @@ void DoSharedWork()
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					SetDirty(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
-					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [WRITE] [QUEUE] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
