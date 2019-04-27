@@ -42,6 +42,10 @@ int toMasterQueue;   //queue for communicating from child to master
 char *filen;		 //name of this executable
 int childCount = 19; //Max children concurrent
 
+/* Statistics */
+int requestCounter = 0;
+int pagefaultCounter = 0;
+
 FILE *o; //output log file pointer
 
 const int CLOCK_ADD_INC = 250000; //How much to increment the clock by per tick
@@ -80,6 +84,7 @@ int GetPid(int pos);
 void ClearPid(int pos);
 void SetPid(int pos, int pid);
 void DisplayResourcesToFile();
+void DisplayStatistics();
 
 /* Message queue standard message buffer */
 struct
@@ -140,6 +145,8 @@ void Handler(int signal)
 	for (i = 0; i < childCount; i++) //loop thorough the proccess table and issue a termination signal to all unkilled proccess/children
 		if (data->proc[i].pid != -1)
 			kill(data->proc[i].pid, SIGTERM);
+
+	DisplayStatistics();
 
 	fflush(o);							  //flush out the output file
 	fclose(o);							  //close output file
@@ -238,6 +245,21 @@ void SweepProcBlocks()
 	int i;
 	for (i = 0; i < MAX_PROCS; i++)
 		data->proc[i].pid = -1;
+}
+
+void DisplayStatistics()
+{
+	//accs per sec
+	float aps = ((float)requestCounter /  (float)(data->sysTime.seconds));
+
+	//pagefaults per memory accs
+	float ppma = ((float)(pagefaultCounter) / (float)requestCounter);
+	
+	printf("\n\n** Statistics (as decimal)**");
+	printf("\n\tPageFaults: %i", pagefaultCounter);
+	printf("\n\tRequests: %i", requestCounter);
+	printf("\n\tMemory accesses per second: %f", aps);
+	printf("\n\tPage faults per memory acc: %f", ppma);
 }
 
 /* calculates pageID based on the page size and rawLine provided */
@@ -539,7 +561,6 @@ void DoSharedWork()
 	int exitCount = 0;
 	int status;
 	int iterator;
-	int requestCounter = 0;
 
 	/* Proc toChildQueue and message toChildQueue data */
 	int msgsize;
@@ -616,7 +637,8 @@ void DoSharedWork()
 
 				switch (CheckAndInsert(procpos, CalculatePageID(rawLine), 0)) //check the current state of the frame that was requested
 				{
-				case 0:																 //The requested frame is not in memory or ever saved in the proccess table and therefore pagefault + queue
+				case 0:	
+					pagefaultCounter++;									 //The requested frame is not in memory or ever saved in the proccess table and therefore pagefault + queue
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
@@ -634,7 +656,8 @@ void DoSharedWork()
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
-				case 2:																 //the request frame is in secondary storage, we must bring it back before we can read it. Queued.
+				case 2:
+					pagefaultCounter++;											 //the request frame is in secondary storage, we must bring it back before we can read it. Queued.
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
@@ -662,7 +685,8 @@ void DoSharedWork()
 
 				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw), 0)) //Check state of page to be written to
 				{
-				case 0:																						   //The page is not in memory and is not in the proc frame table, load it in, queue while waiting
+				case 0:
+					pagefaultCounter++;																	   //The page is not in memory and is not in the proc frame table, load it in, queue while waiting
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds;						   //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;									   //capture current time
 					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
@@ -680,7 +704,8 @@ void DoSharedWork()
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
 					fprintf(o, "\t-> [%i:%i] [WRITE] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 					break;
-				case 2:																 //the frame was swapped out to secondary storage so we must load it in first before we can write to it...queue and block
+				case 2:
+					pagefaultCounter++;													 //the frame was swapped out to secondary storage so we must load it in first before we can write to it...queue and block
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
 
@@ -703,11 +728,10 @@ void DoSharedWork()
 			}
 
 			//shift bits after SHIFT_INTERVAL and display table
-			if ((requestCounter++) == SHIFT_INTERVAL)
+			if (((requestCounter++) % SHIFT_INTERVAL) == 0)
 			{
 				ShiftReference();
 				DisplayResources();
-				requestCounter = 0;
 			}
 		}
 
