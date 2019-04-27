@@ -30,6 +30,8 @@ Sometimes the random number generator...isn't quite random. Keep an eye out for 
 !!! Important !!!
 
 When you launch oss, it may take longer than 2 seconds. This is is because of I/O. Give it about 15 seconds you will get a termination prompt.
+
+Statistics are printed TO THE CONSOLE after program termination. This is in an effort to make things easier to see.
 ## How to Run
 ```
 $ make
