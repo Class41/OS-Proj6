@@ -3,19 +3,25 @@
 ***
 
 Author: Vasyl Onufriyev
-Date Finished: 4-20-19
+Date Finished: 4-26-19
 
 ***
 
 ## Purpose
 
-oss will spawn off processes at random intervals and listen for requests from those children, and attempt to manage the system resources and allocate to each of them as requests come in to release/terminate/accuire resources.
+Oss will spawn of children proccesses then those children will attempt to secure a frame in memory. Oss will either check and see that the requested frame exists in memory or doesn't. 
 
-Children will loop until terminated asking for resources, releasing resources, or doing nothing if resource release is rolled but nothing is releasable.
+if the frame exists: oss simply returns an OK to the child signaling that it may proceed and the data it requested is now in the frame.
 
-In the case that a child cannot get a resouce, it enters a resource queue which is checked every OSS iteration and resources are given to proceses as they come in.
+if the frame does not exist:
 
-In the case that a deadlock occours, the deadlocking algorithm takes center stage and checks for obvious deadlocks at first, then attempts to free up the deadlock by killing the proccess which is located closer to the 0th position of the process table, then checking if that resolved the issue. It continues doing this until no further deadlocks exist.
+1. If the data is resident in the proccess translation table but is swapped: find a place to put the data, swap out whatever is there, then install the requested frame. 
+
+2. Nonresident in the translation table or in the main memory frames: find a spot, fill it in/swap out if something is there.
+
+in either of these cases, we pay attention to the reference bits, which will determine what frame we end up replacing. Also, we keep track of the dirty bit which will tell us how much more expensive the operation will be.
+
+I have it output the table to the console as well as to the file so it is easier for you to see the progress of the program as it runs.
 
 WARNINGS:
 
@@ -35,7 +41,6 @@ $ ./oss [options]
 ```
 -h -> show help menu
 -n -> how many children should exist at any given time. Max 19/Default 19
--v -> set verbose, see more data on what is happening internally in the output file. default off
 ```
 
 Output file:
