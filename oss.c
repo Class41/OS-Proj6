@@ -45,6 +45,7 @@ int childCount = 19; //Max children concurrent
 /* Statistics */
 int requestCounter = 0;
 int pagefaultCounter = 0;
+Time accessTime = {0, 0};
 
 FILE *o; //output log file pointer
 
@@ -247,19 +248,24 @@ void SweepProcBlocks()
 		data->proc[i].pid = -1;
 }
 
+/* Display statistics */
 void DisplayStatistics()
 {
 	//accs per sec
-	float aps = ((float)requestCounter /  (float)(data->sysTime.seconds));
+	float aps = ((float)requestCounter /  ((float)(data->sysTime.seconds) + ((float)data->sysTime.ns / (float)(1000000000))));
 
 	//pagefaults per memory accs
 	float ppma = ((float)(pagefaultCounter) / (float)requestCounter);
+
+	//avg access time in seconds
+	float aat = (((float)(data->sysTime.seconds) + ((float)data->sysTime.ns / (float)(1000000000))) / ((float)requestCounter));
 	
 	printf("\n\n** Statistics (as decimal)**");
 	printf("\n\tPageFaults: %i", pagefaultCounter);
 	printf("\n\tRequests: %i", requestCounter);
 	printf("\n\tMemory accesses per second: %f", aps);
 	printf("\n\tPage faults per memory acc: %f", ppma);
+	printf("\n\tAvg acc time: %f seconds", aat);
 }
 
 /* calculates pageID based on the page size and rawLine provided */
@@ -348,8 +354,9 @@ void InsertPage(int pid, int pageID)
 			
 		if (mem.mainMemory.frames[oldestPos].dirty == 0x1) //check for dirty bit
 		{
-			fprintf(o, "\t-> [DIRTY] OOF. That there is a dirty page. That'll cost ya. \n\n");	
-			AddTime(&(data->sysTime), 5000); //Make swapping it out more expensive
+			fprintf(o, "\t-> [DIRTY] OOF. That there is a dirty page. That'll cost ya. \n\n");
+			AddTimeLong(&(accessTime), abs((long)(5) * (long)1000000));
+			AddTimeLong(&(data->sysTime), abs((long)(5) * (long)1000000));  //Make swapping it out more expensive
 		}
 
 		(mem.mainMemory.frames[oldestPos].callback)->swapped = 1; //set the swapped out frame's swapped level to 1
@@ -641,8 +648,8 @@ void DoSharedWork()
 					pagefaultCounter++;									 //The requested frame is not in memory or ever saved in the proccess table and therefore pagefault + queue
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
-
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 15ms from now
+					AddTimeLong(&(accessTime), abs((long)(15) * (long)1000000));
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(15) * (long)1000000)); //set new exec time to 0 - 15ms from now
 					data->proc[procpos].unblockOP = 0;														   //set which operation should be performed on unlocked
 					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);						   //set the last frame requested
 					enqueue(resQueue, reqpid);																   //enqueue into wait queue since failed
@@ -651,6 +658,7 @@ void DoSharedWork()
 				case 1:								   //the requested frame is in memory and is not swapped out. Return OK to child
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
 					msgbuf.mtype = reqpid;
+					AddTime(&(accessTime), 10);
 					AddTime(&(data->sysTime), 10);													 //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos); //set reference bit since we just referenced the frame
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
@@ -660,8 +668,9 @@ void DoSharedWork()
 					pagefaultCounter++;											 //the request frame is in secondary storage, we must bring it back before we can read it. Queued.
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
 					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
-
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 15ms from now
+				
+					AddTimeLong(&(accessTime), abs((long)(15) * (long)1000000));
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(15) * (long)1000000)); //set new exec time to 0 - 15ms from now
 					data->proc[procpos].unblockOP = 0;
 					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);
 
@@ -688,8 +697,10 @@ void DoSharedWork()
 				case 0:
 					pagefaultCounter++;																	   //The page is not in memory and is not in the proc frame table, load it in, queue while waiting
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds;						   //capture current time
-					data->proc[procpos].unblockTime.ns = data->sysTime.ns;									   //capture current time
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;
+				
+					AddTimeLong(&(accessTime), abs((long)(15) * (long)1000000));
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;														   //proc to perform on unblock
 					data->proc[procpos].lastFrameRequested = CalculatePageID(writeRaw);
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
@@ -697,6 +708,7 @@ void DoSharedWork()
 					break;
 				case 1:								   //the page is in memory and is updated, set the dirty bit, set the reference bit, keep chugging along
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
+					AddTime(&(accessTime), 5000);
 					AddTime(&(data->sysTime), 5000);   //increment clock between tasks to advance the clock a little
 					SetDirty(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
@@ -707,9 +719,10 @@ void DoSharedWork()
 				case 2:
 					pagefaultCounter++;													 //the frame was swapped out to secondary storage so we must load it in first before we can write to it...queue and block
 					data->proc[procpos].unblockTime.seconds = data->sysTime.seconds; //capture current time
-					data->proc[procpos].unblockTime.ns = data->sysTime.ns;			 //capture current time
-
-					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(rand() % 15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
+					data->proc[procpos].unblockTime.ns = data->sysTime.ns;	
+		 //capture current time
+					AddTimeLong(&(accessTime), abs((long)(15) * (long)1000000));
+					AddTimeLong(&(data->proc[procpos].unblockTime), abs((long)(15) * (long)1000000)); //set new exec time to 0 - 1000  ms after now
 					data->proc[procpos].unblockOP = 1;														   //op to perform on unblock
 					data->proc[procpos].lastFrameRequested = CalculatePageID(writeRaw);
 					enqueue(resQueue, reqpid);
