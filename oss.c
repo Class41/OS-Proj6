@@ -17,9 +17,9 @@
 
 /*
 *	Author: Vasyl Onufriyev
-*	Project 5: Resource Managment
-*	Date: 4/14/19
-*	Purpose: Launch user processes, allocate resourced or deny them depending on a shared memory table
+*	Project 6
+*	Date: 4/26/19
+*	Purpose: Launch user processes, allocate pagetables  or swap  them depending on a shared main memory frame table
 */
 
 #define SHIFT_INTERVAL 100

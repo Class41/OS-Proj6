@@ -17,9 +17,9 @@
 
 /*
 *	Author: Vasyl Onufriyev
-*	Project 5: Resource managment
-*	Date: 4/16/19
-*	Purpose: User process that is managed by oss, will either terminate, use all time, or begin an IO operation which blocks and returns a certain amount of time 
+*	Project 6
+*	Date: 4/26/19
+*	Purpose: User process that is managed by oss, will either terminate, request to read a frame or request to write to a frame from OSS
 */
 
 /* Constants for termination and using all time--the reason termination is not const is because it changes depending if it is a realtime proccess or not */

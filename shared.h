@@ -1,6 +1,14 @@
 #ifndef SHARED_H
 #define SHARED_H
 
+/*
+*	Author: Vasyl Onufriyev
+*	Project 6
+*	Date: 4/26/19
+*	Purpose: Shared memory be here
+*/
+
+
 #define MAX_PROCS 19
 
 /* Time structure */

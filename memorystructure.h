@@ -1,6 +1,14 @@
 #ifndef MEM_STR_H
 #define MEM_STR_H
 
+/*
+*	Author: Vasyl Onufriyev
+*	Project 6
+*	Date: 4/26/19
+*	Purpose: Definition header for memory and frames
+*/
+
+
 #include "shared.h"
 
 #define PAGE_SIZE 1
