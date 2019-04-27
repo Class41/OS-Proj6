@@ -321,11 +321,12 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1) //if the frame was already occupied
 	{
-		fprintf(o, "\t-> [%i:%i] [SWAPOUT IN PROGRESS] Swapping main memory frame %i currently allocated to %i (proc: %i) for PID %i (proc: %i )\n\n", 
-			data->sysTime.seconds, data->sysTime.ns, oldestPos, GetPid(oldestPos), FindPID(GetPid(oldestPos)), pid, FindPID(pid));
+		fprintf(o, "\t-> [%i:%i] [SWAPOUT IN PROGRESS] Swapping main memory frame %i currently allocated to %i for proc %i \n\n", 
+			data->sysTime.seconds, data->sysTime.ns, oldestPos, GetPid(oldestPos), pid);
 			
 		if (mem.mainMemory.frames[oldestPos].dirty == 0x1) //check for dirty bit
 		{
+			fprintf(o, "\t-> [DIRTY] OOF. That there is a dirty page. That'll cost ya. \n\n");	
 			AddTime(&(data->sysTime), 5000); //Make swapping it out more expensive
 		}
 
