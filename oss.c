@@ -737,7 +737,7 @@ void DoSharedWork()
 				int procpos = FindPID(msgbuf.mtype); //find child in proc table
 				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
 
-				fprintf(o, "\t-> [%i:%i] [TERMINATE] [PAUGE_FAULT=SWAPPED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+				fprintf(o, "\t-> [%i:%i] [TERMINATED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 			}
 
 			//shift bits after SHIFT_INTERVAL and display table
