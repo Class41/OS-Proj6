@@ -349,12 +349,12 @@ void InsertPage(int pid, int pageID)
 
 	if (mem.mainMemory.frames[oldestPos].currentPid > -1) //if the frame was already occupied
 	{
-		fprintf(o, "\t-> [%i:%i] [SWAPOUT IN PROGRESS] Swapping main memory frame %i currently allocated to %i for proc %i \n\n",
+		fprintf(o, "\t-> [%i:%i] [SWAPOUT IN PROGRESS] Swapping main memory frame %i currently allocated to %i for proc %i \n",
 				data->sysTime.seconds, data->sysTime.ns, oldestPos, GetPid(oldestPos), pid);
 
 		if (mem.mainMemory.frames[oldestPos].dirty == 0x1) //check for dirty bit
 		{
-			fprintf(o, "\t-> [DIRTY] OOF. That there is a dirty page. That'll cost ya. \n\n");
+			fprintf(o, "\t-> [DIRTY] OOF. That there is a dirty page. That'll cost ya. \n");
 			AddTimeLong(&(accessTime), abs((long)(5) * (long)1000000));
 			AddTimeLong(&(data->sysTime), abs((long)(5) * (long)1000000)); //Make swapping it out more expensive
 		}
@@ -509,6 +509,8 @@ void DisplayResourcesToFile()
 	{
 		fprintf(o, "\n[0x%-5x]\t%c%c%c%c%c%c%c%c\t%x\t%-3i", i * 1000, BYTE_TO_BINARY(mem.mainMemory.frames[i].ref), mem.mainMemory.frames[i].dirty, mem.mainMemory.frames[i].currentPid);
 	}
+
+	fprintf(o, "\n");
 }
 
 /* Find the proccess block with the given pid and return the position in the array */
@@ -618,7 +620,7 @@ void DoSharedWork()
 				/* Initialize the proccess table */
 				data->proc[pos].pid = pid; //we stored the pid from fork call and now assign it to PID
 				GenerateProc(pos);
-				fprintf(o, "%s: [%i:%i] [PROC CREATE] pid: %i\n\n", filen, data->sysTime.seconds, data->sysTime.ns, pid);
+				fprintf(o, "\n%s: [%i:%i] [PROC CREATE] pid: %i, locpid: %i", filen, data->sysTime.seconds, data->sysTime.ns, pid, pos);
 				activeProcs++; //increment active execs
 			}
 			else
@@ -640,7 +642,7 @@ void DoSharedWork()
 				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send resource line number
 				rawLine = atoi(msgbuf.mtext);
 
-				fprintf(o, "%s: [%i:%i] [REQUEST] pid: %i proc: %i rawLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, rawLine);
+				fprintf(o, "\n%s: [%i:%i] Incoming Operation: [REQUEST] pid: %i proc: %i rawLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, rawLine);
 
 				switch (CheckAndInsert(procpos, CalculatePageID(rawLine), 0)) //check the current state of the frame that was requested
 				{
@@ -653,7 +655,7 @@ void DoSharedWork()
 					data->proc[procpos].unblockOP = 0;												  //set which operation should be performed on unlocked
 					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);				  //set the last frame requested
 					enqueue(resQueue, reqpid);														  //enqueue into wait queue since failed
-					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PageID: %i] [PAGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(rawLine) ,msgbuf.mtype);
 					break;
 				case 1:								   //the requested frame is in memory and is not swapped out. Return OK to child
 					strcpy(msgbuf.mtext, "REQ_GRANT"); //send message that resource has been granted to child
@@ -662,7 +664,7 @@ void DoSharedWork()
 					AddTime(&(data->sysTime), 10);													 //increment clock between tasks to advance the clock a little
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(rawLine)].framePos); //set reference bit since we just referenced the frame
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-					fprintf(o, "\t-> [%i:%i] [REQUEST] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PageID: %i] [OK] pid: %i request fulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(rawLine), msgbuf.mtype);
 					break;
 				case 2:
 					pagefaultCounter++;												 //the request frame is in secondary storage, we must bring it back before we can read it. Queued.
@@ -675,7 +677,7 @@ void DoSharedWork()
 					data->proc[procpos].lastFrameRequested = CalculatePageID(rawLine);
 
 					enqueue(resQueue, reqpid);
-					fprintf(o, "\t-> [%i:%i] [REQUEST] [PAGE_FAULT=SWAPPEDOUT] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [REQUEST] [PageID: %i] [PAGE_FAULT=SWAPPEDOUT] pid: %i request unfulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(rawLine), msgbuf.mtype);
 					break;
 				default:
 					break;
@@ -690,7 +692,7 @@ void DoSharedWork()
 				msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), reqpid, 0); //wait for child to send writing resource identifier
 				writeRaw = atoi(msgbuf.mtext);
 
-				fprintf(o, "%s: [%i:%i] [WRITE] pid: %i proc: %i writeLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, writeRaw);
+				fprintf(o, "\n%s: [%i:%i] Incoming Operation: [WRITE] pid: %i proc: %i writeLine: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos, writeRaw);
 
 				switch (CheckAndInsert(procpos, CalculatePageID(writeRaw), 0)) //Check state of page to be written to
 				{
@@ -704,7 +706,7 @@ void DoSharedWork()
 					data->proc[procpos].unblockOP = 1;												  //proc to perform on unblock
 					data->proc[procpos].lastFrameRequested = CalculatePageID(writeRaw);
 					enqueue(resQueue, reqpid); //enqueue into wait queue since failed
-					fprintf(o, "\t-> [%i:%i] [WRITE] [PAGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [WRITE] [PageID: %i] [PAGE_FAULT=NOTFOUND] pid: %i request unfulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(writeRaw),msgbuf.mtype);
 					break;
 				case 1:								   //the page is in memory and is updated, set the dirty bit, set the reference bit, keep chugging along
 					strcpy(msgbuf.mtext, "WRI_GRANT"); //send message that resource has been granted to child
@@ -714,7 +716,7 @@ void DoSharedWork()
 					SetReference(mem.procTables[procpos].frames[CalculatePageID(writeRaw)].framePos);
 					msgbuf.mtype = reqpid;
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-					fprintf(o, "\t-> [%i:%i] [WRITE] [OK] pid: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [WRITE] [PageID: %i] [OK] pid: %i request fulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(writeRaw), msgbuf.mtype);
 					break;
 				case 2:
 					pagefaultCounter++;												 //the frame was swapped out to secondary storage so we must load it in first before we can write to it...queue and block
@@ -726,7 +728,7 @@ void DoSharedWork()
 					data->proc[procpos].unblockOP = 1;												  //op to perform on unblock
 					data->proc[procpos].lastFrameRequested = CalculatePageID(writeRaw);
 					enqueue(resQueue, reqpid);
-					fprintf(o, "\t-> [%i:%i] [WRITE] [PAGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+					fprintf(o, "\t-> [%i:%i] [WRITE] [PageID: %i][PAGE_FAULT=SWAPPED] pid: %i request unfulfilled...\n", data->sysTime.seconds, data->sysTime.ns, CalculatePageID(writeRaw), msgbuf.mtype);
 					break;
 				default:
 					break;
@@ -735,9 +737,9 @@ void DoSharedWork()
 			else if (strcmp(msgbuf.mtext, "TER") == 0) //if termination request
 			{
 				int procpos = FindPID(msgbuf.mtype); //find child in proc table
-				fprintf(o, "%s: [%i:%i] [TERMINATE] pid: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
+				fprintf(o, "\n%s: [%i:%i] [TERMINATE] pid: %i\n", filen, data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
 
-				fprintf(o, "\t-> [%i:%i] [TERMINATED] pid: %i\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
+				fprintf(o, "\t-> [%i:%i] [TERMINATED] pid: %i\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype);
 			}
 
 			//shift bits after SHIFT_INTERVAL and display table
@@ -807,7 +809,7 @@ void DoSharedWork()
 					CheckAndInsert(procpos, data->proc[procpos].lastFrameRequested, 1);
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-					fprintf(o, "\t-> [%i:%i] [QUEUE] [REQUEST] pid: %i proc: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
+					fprintf(o, "\t-> [%i:%i] [QUEUE] [REQUEST] [PageID: %i] pid: %i proc: %i request fulfilled...\n", data->sysTime.seconds, data->sysTime.ns, data->proc[procpos].lastFrameRequested ,msgbuf.mtype, procpos);
 					break;
 				case 1: //if op = 1, perform a write grant and dequeue the request
 					msgbuf.mtype = cpid;
@@ -816,7 +818,7 @@ void DoSharedWork()
 					SetReference(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					SetDirty(mem.procTables[procpos].frames[data->proc[procpos].lastFrameRequested].framePos);
 					msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT);
-					fprintf(o, "\t-> [%i:%i] [QUEUE] [WRITE] pid: %i proc: %i request fulfilled...\n\n", data->sysTime.seconds, data->sysTime.ns, msgbuf.mtype, procpos);
+					fprintf(o, "\t-> [%i:%i] [QUEUE] [WRITE] [PageID: %i]pid: %i proc: %i request fulfilled...\n", data->sysTime.seconds, data->sysTime.ns, data->proc[procpos].lastFrameRequested, msgbuf.mtype, procpos);
 					break;
 				default: //here just in case
 					break;
